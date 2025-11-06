@@ -40,110 +40,123 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 25px;
-            margin-top: 30px;
+            gap: 30px;
+            margin-top: 40px;
         }
 
         .title-overlay {
-            position: absolute;
+            position: fixed;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            font-size: 3.2rem;
+            font-size: 4.5rem;
             font-weight: bold;
-            color: rgba(255, 255, 255, 0.85);
-            text-shadow: 0 0 15px rgba(0, 191, 255, 0.7);
+            color: rgba(255, 255, 255, 0.9);
+            text-shadow: 
+                0 0 20px rgba(0, 191, 255, 0.8),
+                0 0 40px rgba(0, 191, 255, 0.6),
+                0 0 60px rgba(0, 191, 255, 0.4);
             pointer-events: none;
-            z-index: 5;
+            z-index: 10;
             text-align: center;
+            letter-spacing: 3px;
             white-space: nowrap;
-            letter-spacing: 2px;
+            opacity: 0;
+            transition: opacity 0.6s ease;
+        }
+
+        .title-overlay.visible {
+            opacity: 1;
         }
 
         .timers-grid {
             display: grid;
             grid-template-columns: 1fr;
-            gap: 25px;
+            gap: 30px;
             width: 100%;
             position: relative;
             z-index: 1;
         }
 
         .timer-card {
-            background: rgba(30, 30, 30, 0.8);
+            background: rgba(30, 30, 30, 0.85);
             border: 2px solid var(--secondary);
-            border-radius: 16px;
-            padding: 25px;
+            border-radius: 18px;
+            padding: 28px;
             text-align: center;
             transition: all 0.3s ease;
             position: relative;
             width: 100%;
-            max-width: 520px;
+            max-width: 540px;
             margin: 0 auto;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(4px);
         }
 
         .timer-card:focus-within {
             border-color: var(--focus);
-            box-shadow: 0 0 30px var(--focus-glow), 0 0 50px var(--focus-glow);
+            box-shadow: 
+                0 0 35px var(--focus-glow), 
+                0 0 60px var(--focus-glow),
+                inset 0 0 20px rgba(0, 191, 255, 0.1);
             outline: none;
-            transform: scale(1.03);
+            transform: scale(1.04);
         }
 
         .timer-display {
-            font-size: 5.2rem;
+            font-size: 5.8rem;
             font-weight: bold;
             color: var(--primary);
-            margin: 18px 0;
-            letter-spacing: 5px;
-            text-shadow: 0 0 14px rgba(0, 191, 255, 0.6);
+            margin: 20px 0;
+            letter-spacing: 6px;
+            text-shadow: 0 0 16px rgba(0, 191, 255, 0.7);
             transition: all 0.3s ease;
         }
 
         .timer-display.rest {
             color: var(--rest);
-            text-shadow: 0 0 14px rgba(255, 69, 0, 0.6);
+            text-shadow: 0 0 16px rgba(255, 69, 0, 0.7);
         }
 
         .status-info {
-            font-size: 1.8rem;
+            font-size: 1.9rem;
             color: var(--secondary);
-            margin-bottom: 10px;
+            margin-bottom: 12px;
             font-weight: bold;
         }
 
         .round-info {
-            font-size: 1.5rem;
+            font-size: 1.6rem;
             color: var(--secondary);
-            margin-bottom: 18px;
+            margin-bottom: 20px;
         }
 
         .controls {
             display: flex;
             justify-content: center;
-            gap: 16px;
+            gap: 18px;
             flex-wrap: wrap;
-            margin-bottom: 18px;
+            margin-bottom: 20px;
         }
 
         button {
             background: #222;
             color: var(--text);
             border: 2px solid var(--secondary);
-            padding: 15px 25px;
-            font-size: 1.3rem;
-            border-radius: 12px;
+            padding: 16px 28px;
+            font-size: 1.35rem;
+            border-radius: 14px;
             cursor: pointer;
             transition: all 0.25s ease;
-            min-width: 140px;
+            min-width: 150px;
             font-weight: 600;
         }
 
         button:focus {
-            outline: 5px solid var(--focus);
+            outline: 6px solid var(--focus);
             background: #333;
             border-color: var(--focus);
-            box-shadow: 0 0 18px var(--focus-glow);
+            box-shadow: 0 0 22px var(--focus-glow);
             transform: translateY(-2px);
         }
 
@@ -160,9 +173,9 @@
         }
 
         .stop-btn:focus {
-            outline: 5px solid var(--stop);
+            outline: 6px solid var(--stop);
             background: #600;
-            box-shadow: 0 0 18px rgba(255, 51, 51, 0.6);
+            box-shadow: 0 0 22px rgba(255, 51, 51, 0.7);
         }
 
         .stop-btn:active {
@@ -173,94 +186,94 @@
         .config {
             display: grid;
             grid-template-columns: 1fr 1fr 1fr;
-            gap: 14px;
-            margin-top: 12px;
+            gap: 16px;
+            margin-top: 14px;
         }
 
         .input-group {
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 7px;
+            gap: 8px;
         }
 
         input {
             background: #111;
             color: var(--text);
             border: 1.5px solid var(--secondary);
-            padding: 12px;
-            font-size: 1.15rem;
-            border-radius: 10px;
+            padding: 13px;
+            font-size: 1.2rem;
+            border-radius: 12px;
             text-align: center;
-            width: 72px;
+            width: 76px;
             transition: all 0.3s ease;
         }
 
         input:focus {
-            outline: 4px solid var(--focus);
+            outline: 5px solid var(--focus);
             border-color: var(--focus);
-            box-shadow: 0 0 14px var(--focus-glow);
-            transform: scale(1.06);
+            box-shadow: 0 0 16px var(--focus-glow);
+            transform: scale(1.07);
         }
 
         .inc-btn, .dec-btn {
-            width: 42px;
-            height: 42px;
+            width: 44px;
+            height: 44px;
             padding: 0;
-            font-size: 1.6rem;
+            font-size: 1.7rem;
             min-width: auto;
             font-weight: bold;
         }
 
         .inc-btn:focus, .dec-btn:focus {
-            box-shadow: 0 0 18px var(--focus-glow);
+            box-shadow: 0 0 20px var(--focus-glow);
         }
 
         .add-timer {
             background: transparent;
             border: 3px dashed var(--secondary);
             color: var(--secondary);
-            font-size: 1.7rem;
-            padding: 50px;
-            margin: 30px 0;
-            border-radius: 20px;
+            font-size: 1.8rem;
+            padding: 55px;
+            margin: 35px 0;
+            border-radius: 22px;
             cursor: pointer;
             transition: all 0.3s ease;
-            min-width: 320px;
+            min-width: 340px;
         }
 
         .add-timer:focus {
             border-color: var(--focus);
             color: var(--focus);
             outline: none;
-            box-shadow: 0 0 35px var(--focus-glow);
-            transform: scale(1.04);
+            box-shadow: 0 0 40px var(--focus-glow);
+            transform: scale(1.05);
         }
 
         .remove-timer {
             position: absolute;
-            top: 14px;
-            right: 14px;
+            top: 16px;
+            right: 16px;
             background: #500;
             color: white;
             border: none;
-            width: 38px;
-            height: 38px;
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
-            font-size: 1.4rem;
+            font-size: 1.5rem;
             cursor: pointer;
             transition: all 0.2s ease;
         }
 
         .remove-timer:focus {
             background: #f00;
-            outline: 4px solid var(--focus);
-            box-shadow: 0 0 18px var(--focus-glow);
+            outline: 5px solid var(--focus);
+            box-shadow: 0 0 20px var(--focus-glow);
         }
 
         @media (min-width: 768px) {
             .timers-grid {
-                grid-template-columns: repeat(auto-fill, minmax(440px, 1fr));
+                grid-template-columns: repeat(auto-fill, minmax(460px, 1fr));
             }
         }
 
@@ -270,14 +283,14 @@
 
         *:focus {
             position: relative;
-            z-index: 10;
+            z-index: 15;
         }
     </style>
 </head>
 <body>
 
     <div class="main-container">
-        <!-- Title overlay centered over first timer -->
+        <!-- Title overlay centered on screen -->
         <div class="title-overlay" id="title-overlay">New Journey BJJ</div>
 
         <div class="timers-grid" id="timers-container">
@@ -347,9 +360,10 @@
 
             if (isFirst) {
                 timersContainer.appendChild(card);
+                titleOverlay.classList.add('visible');
             } else {
                 timersContainer.appendChild(card);
-                titleOverlay.style.display = 'none'; // Hide title after first added
+                titleOverlay.classList.remove('visible');
             }
 
             setTimeout(() => {
@@ -453,17 +467,17 @@
             }
 
             function stopTimer() {
-            clearInterval(interval);
-            isRunning = false;
-            isResting = false;
-            currentRound = 1;
-            timeLeft = fightTime;
-            startBtn.textContent = 'Start';
-            startBtn.classList.remove('active');
-            updateDisplay();
-            updateStatus();
-            updateRoundInfo();
-            display.style.color = 'var(--primary)';
+                clearInterval(interval);
+                isRunning = false;
+                isResting = false;
+                currentRound = 1;
+                timeLeft = fightTime;
+                startBtn.textContent = 'Start';
+                startBtn.classList.remove('active');
+                updateDisplay();
+                updateStatus();
+                updateRoundInfo();
+                display.style.color = 'var(--primary)';
             }
 
             function endSession() {
@@ -521,7 +535,7 @@
                     card.remove();
                     timerCount--;
                     if (timerCount === 0) {
-                        titleOverlay.style.display = 'block';
+                        titleOverlay.classList.add('visible');
                     }
                 }
             });
@@ -530,11 +544,6 @@
             updateDisplay();
             updateStatus();
             updateRoundInfo();
-
-            // Show title only over first timer
-            if (isFirst) {
-                titleOverlay.style.display = 'block';
-            }
         }
 
         // Create first timer on load
@@ -547,7 +556,7 @@
         // Remote navigation
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' || e.key === ' ') {
-                const focused, = document.activeElement;
+                const focused = document.activeElement;
                 if (focused && focused.click && !focused.disabled) {
                     e.preventDefault();
                     focused.click();

@@ -49,7 +49,7 @@
         .logo-image {
             width: 84px;
             height: 70px;
-            margin-bottom: 15px; 
+            margin-bottom: 15px;
         }
 
         .title {
@@ -567,7 +567,10 @@
                     let val = parseInt(input.value) || 1;
                     val += btn.classList.contains('inc-btn') ? 1 : -1;
                     input.value = Math.max(1, Math.min(60, val));
-                    input.dispatchEvent(new Event('change'));
+                    
+                    // --- THIS IS THE FIX ---
+                    // Manually dispatch an 'input' event to trigger the main listener
+                    input.dispatchEvent(new Event('input', { bubbles: true }));
                 });
             });
         }
@@ -805,9 +808,17 @@
                 updateRoundLabels();
             });
 
-            roundsContainer.addEventListener('change', (e) => {
-                 if (e.target.tagName === 'INPUT') resetTimer();
+            // --- THIS IS THE FIX ---
+            // This listener updates the main timer whenever a round input is changed.
+            roundsContainer.addEventListener('input', (e) => {
+                 // Only fire if it's an input and the timer isn't running
+                 if (e.target.tagName === 'INPUT' && !isRunning) {
+                    // resetTimer() re-reads all inputs and syncs the main timer
+                    // to the Round 1 value.
+                    resetTimer();
+                 }
             });
+            // --- END FIX ---
 
             removeBtn.addEventListener('click', () => {
                 card.remove();

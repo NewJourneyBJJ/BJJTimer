@@ -12,7 +12,7 @@
             --text: #ffffff;
             --focus: #00bfff;
             --rest: #ff4500;
-            --prep: #f0e68c; /* Khaki for prep time */
+            --prep: #f0e68c; 
             --stop: #ff3b30;
             --card-bg: rgba(30, 30, 30, 0.95);
             --card-border: #333;
@@ -83,7 +83,8 @@
             transition: all 0.3s ease;
             position: relative;
             width: 100%;
-            max-width: 600px;
+            /* --- THIS IS THE FIX --- */
+            max-width: 1000px; /* Widened for TV layout */
             box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
         }
 
@@ -264,7 +265,6 @@
             padding: 10px;
         }
 
-        /* This container handles the horizontal layout for rounds */
         .rounds-container {
             display: flex;
             flex-wrap: wrap; 
@@ -274,7 +274,6 @@
             width: 100%;
         }
 
-        /* This styles each individual round */
         .round-timer {
             background: rgba(0, 0, 0, 0.5);
             border: 1px solid #444;
@@ -284,8 +283,11 @@
             align-items: center;
             gap: 12px;
             justify-content: space-between;
-            flex: 1 1 180px;  /* This allows it to grow/shrink horizontally */
-            max-width: 300px; /* This stops it from getting too big */
+
+            /* --- THIS IS THE FIX --- */
+            /* Don't grow, Can shrink, Basis of 280px */
+            flex: 0 1 280px; 
+            /* This will create 3+ columns on your wide card */
         }
 
 
@@ -424,7 +426,6 @@
         const addTimerBtn = document.getElementById('add-timer-btn');
 
         // --- AUDIO SYSTEM ---
-
         let audioCtx = null; 
         
         function initAudio() {
@@ -437,13 +438,7 @@
             }
         }
 
-        /**
-         * Plays a generated beep.
-         * @param {number} frequency - Frequency in Hz (e.g., 440 for A4)
-         * @param {number} duration - Duration in milliseconds
-         * @param {string} type - 'sine', 'square', 'sawtooth', 'triangle'
-         */
-        function playBeep(frequency, duration, type = 'square') { // Changed default to 'square'
+        function playBeep(frequency, duration, type = 'square') {
             if (!audioCtx) return; 
 
             const oscillator = audioCtx.createOscillator();
@@ -464,19 +459,17 @@
             oscillator.stop(audioCtx.currentTime + duration / 1000);
         }
 
-        /** Plays the 10-second warning (two short beeps) */
         function playWarningBeep() {
             if (!audioCtx) return;
             playBeep(900, 150, 'square');
             setTimeout(() => playBeep(900, 150, 'square'), 200);
         }
         
-        /** Plays three short beeps for round start */
         function playTripleBeep() {
             if (!audioCtx) return;
-            playBeep(880, 150, 'square'); // Beep 1
-            setTimeout(() => playBeep(880, 150, 'square'), 200); // Beep 2
-            setTimeout(() => playBeep(880, 150, 'square'), 400); // Beep 3
+            playBeep(880, 150, 'square'); 
+            setTimeout(() => playBeep(880, 150, 'square'), 200); 
+            setTimeout(() => playBeep(880, 150, 'square'), 400); 
         }
         
         // --- END AUDIO SYSTEM ---
@@ -599,7 +592,7 @@
         function setupTimerLogic(card, timerId) {
             let roundTimes = []; 
             let prepTime = 10; 
-            let restTime = 10; // Default logic
+            let restTime = 10; 
             let timeLeft = 0;
             let totalRounds = 0;
             let currentRound = 1;
@@ -639,7 +632,8 @@
                 totalRoundsSpan.textContent = totalRounds;
                 if (currentRound > totalRounds) currentRound = totalRounds;
                 if (!isRunning) {
-                    timeLeft = roundTimes[currentRound - 1] || 0;
+                    // This is the line that sets the display to the first round's time
+                    timeLeft = roundTimes[currentRound - 1] || 0; 
                     updateDisplay();
                 }
                 updateRoundInfo();
@@ -683,11 +677,11 @@
                 if (currentRound === 1 && !isResting && !isPrepping && prepTime > 0 && timeLeft === roundTimes[0]) {
                     isPrepping = true;
                     timeLeft = prepTime;
-                    playBeep(660, 150, 'square'); // Prep beep
+                    playBeep(660, 150, 'square'); 
                     updateStatus();
                     updateDisplay();
                 } else {
-                     playTripleBeep(); // Regular start
+                     playTripleBeep(); 
                 }
                 
                 warningPlayed = false;
@@ -703,14 +697,12 @@
 
                     if (timeLeft <= 0) {
                         if (isPrepping) {
-                            // End prep -> Start round 1
                             isPrepping = false;
                             isResting = false;
                             timeLeft = roundTimes[0];
                             warningPlayed = false;
-                            playTripleBeep(); // Round start
+                            playTripleBeep(); 
                         } else if (isResting) {
-                            // End rest -> next round
                             isResting = false;
                             currentRound++;
                             if (currentRound > totalRounds) {
@@ -719,17 +711,16 @@
                             }
                             timeLeft = roundTimes[currentRound - 1];
                             warningPlayed = false;
-                            playTripleBeep(); // Round start
+                            playTripleBeep(); 
                             updateRoundInfo();
                         } else {
-                            // End fight round
                             if (currentRound >= totalRounds) {
                                 endSession();
                                 return;
                             }
                             isResting = true;
                             timeLeft = restTime;
-                            playBeep(440, 500, 'square'); // Round end / Rest start
+                            playBeep(440, 500, 'square'); 
                         }
                         updateStatus();
                     }
@@ -750,12 +741,14 @@
                 isPrepping = false;
                 currentRound = 1;
                 prepTime = parseInt(prepInput.value) || 0;
-                // THIS IS THE CHANGED DEFAULT
                 restTime = parseInt(restInput.value) || 10; 
+                
+                // This function is what syncs the main timer with Round 1
                 updateRoundTimes(); 
+                
                 startBtn.textContent = 'Start';
                 startBtn.classList.remove('active');
-                display.style.color = ''; // Reset from "DONE!" green
+                display.style.color = ''; 
                 updateDisplay();
                 updateStatus();
                 updateRoundInfo();
@@ -792,7 +785,7 @@
             });
             
             restInput.addEventListener('change', () => {
-                restTime = parseInt(restInput.value) || 10; // Update fallback
+                restTime = parseInt(restInput.value) || 10; 
             });
 
             addRoundBtn.addEventListener('click', () => {
@@ -810,6 +803,7 @@
                 updateRoundLabels();
             });
 
+            // This is the listener that updates the main timer when you change the round input
             roundsContainer.addEventListener('change', (e) => {
                  if (e.target.tagName === 'INPUT') resetTimer();
             });
@@ -819,6 +813,7 @@
                 timerCount--;
             });
 
+            // This initial call sets everything up
             resetTimer(); 
         }
 

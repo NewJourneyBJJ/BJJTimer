@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MMA Timer Pro</title>
+    <style>
+        :root {
+            --bg: #000000;
+            --primary: #00bfff;     /* Light blue */
+            --secondary: #cccccc;   /* Light gray */
+            --text: #ffffff;
+            --focus: #00bfff;
+            --rest: #ff4500;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Arial', sans-serif;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .logo-container {
+            margin: 30px 0 40px;
+            text-align: center;
+        }
+
+        .logo {
+            height: 120px;
+            filter: brightness(0) invert(1);
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1000px;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        .timer-card {
+            background: rgba(30, 30, 30, 0.8);
+            border: 2px solid var(--secondary);
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .timer-card:focus-within {
+            border-color: var(--focus);
+            box-shadow: 0 0 20px rgba(0, 191, 255, 0.5);
+            outline: none;
+        }
+
+        .timer-display {
+            font-size: 4.5rem;
+            font-weight: bold;
+            color: var(--primary);
+            margin: 15px 0;
+            letter-spacing: 4px;
+            text-shadow: 0 0 10px rgba(0, 191, 255, 0.4);
+        }
+
+        .timer-display.rest {
+            color: var(--rest);
+            text-shadow: 0 0 10px rgba(255, 69, 0, 0.4);
+        }
+
+        .status-info {
+            font-size: 1.6rem;
+            color: var(--secondary);
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .round-info {
+            font-size: 1.4rem;
+            color: var(--secondary);
+            margin-bottom: 15px;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+
+        button {
+            background: #222;
+            color: var(--text);
+            border: 2px solid var(--secondary);
+            padding: 12px 20px;
+            font-size: 1.2rem;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            min-width: 120px;
+        }
+
+        button:focus {
+            outline: 4px solid var(--focus);
+            background: #333;
+            border-color: var(--focus);
+        }
+
+        button:active, button.active {
+            background: var(--primary);
+            color: black;
+            border-color: var(--primary);
+        }
+
+        .config {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        input {
+            background: #111;
+            color: var(--text);
+            border: 1px solid var(--secondary);
+            padding: 10px;
+            font-size: 1rem;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        input:focus {
+            outline: 3px solid var(--focus);
+            border-color: var(--focus);
+        }
+
+        .add-timer {
+            background: transparent;
+            border: 3px dashed var(--secondary);
+            color: var(--secondary);
+            font-size: 1.5rem;
+            padding: 40px;
+            margin: 20px 0;
+            border-radius: 16px;
+            cursor: pointer;
+        }
+
+        .add-timer:focus {
+            border-color: var(--focus);
+            color: var(--focus);
+            outline: none;
+        }
+
+        .remove-timer {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #400;
+            color: white;
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            font-size: 1.2rem;
+            cursor: pointer;
+        }
+
+        .remove-timer:focus {
+            background: #f00;
+            outline: 3px solid var(--focus);
+        }
+
+        @media (min-width: 768px) {
+            .container {
+                grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+            }
+        }
+
+        /* Fire TV: Ensure focus is visible */
+        button, input, .timer-card, .add-timer {
+            -webkit-tap-highlight-color: transparent;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="logo-container">
+        <img src="https://via.placeholder.com/300x120/00bfff/000000?text=MMA+TIMER+PRO" alt="Logo" class="logo" id="logo-img" />
+    </div>
+
+    <div class="container" id="timers-container">
+        <!-- Timers will be injected here -->
+    </div>
+
+    <button class="add-timer" id="add-timer-btn" tabindex="0">
+        + Add New Timer (Up to 20)
+    </button>
+
+    <script>
+        const MAX_TIMERS = 20;
+        let timerCount = 0;
+        const timersContainer = document.getElementById('timers-container');
+        const addTimerBtn = document.getElementById('add-timer-btn');
+
+        function createTimer() {
+            if (timerCount >= MAX_TIMERS) {
+                alert('Maximum 20 timers allowed.');
+                return;
+            }
+
+            timerCount++;
+            const timerId = `timer-${timerCount}`;
+
+            const timerHTML = `
+                <div class="timer-card" tabindex="0" data-id="${timerId}">
+                    <button class="remove-timer" aria-label="Remove timer">X</button>
+                    
+                    <div class="status-info" id="${timerId}-status">FIGHT</div>
+                    <div class="timer-display" id="${timerId}-display">05:00</div>
+                    <div class="round-info" id="${timerId}-round">Round 1 of <span id="${timerId}-total-rounds">3</span></div>
+                    
+                    <div class="controls">
+                        <button class="start-btn" data-id="${timerId}">Start</button>
+                        <button class="pause-btn" data-id="${timerId}">Pause</button>
+                        <button class="reset-btn" data-id="${timerId}">Reset</button>
+                    </div>
+
+                    <div class="config">
+                        <input type="number" class="duration-input" data-id="${timerId}" placeholder="Fight (min)" min="1" max="60" value="5" />
+                        <input type="number" class="rest-input" data-id="${timerId}" placeholder="Rest (sec)" min="0" max="300" value="60" />
+                        <input type="number" class="rounds-input" data-id="${timerId}" placeholder="Rounds" min="1" max="50" value="3" />
+                    </div>
+                </div>
+            `;
+
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = timerHTML;
+            const card = tempDiv.firstElementChild;
+            timersContainer.insertBefore(card, addTimerBtn);
+
+            setTimeout(() => card.querySelector('.start-btn').focus(), 100);
+
+            setupTimerLogic(card, timerId);
+        }
+
+        function setupTimerLogic(card, timerId) {
+            let fightTime = 300;     // 5 min
+            let restTime = 60;       // 60 sec
+            let timeLeft = fightTime;
+            let totalRounds = 3;
+            let currentRound = 1;
+            let isRunning = false;
+            let isResting = false;
+            let interval = null;
+
+            const display = document.getElementById(`${timerId}-display`);
+            const status = document.getElementById(`${timerId}-status`);
+            const roundDisplay = document.getElementById(`${timerId}-round`);
+            const totalRoundsSpan = document.getElementById(`${timerId}-total-rounds`);
+            const startBtn = card.querySelector('.start-btn');
+            const pauseBtn = card.querySelector('.pause-btn');
+            const resetBtn = card.querySelector('.reset-btn');
+            const durationInput = card.querySelector('.duration-input');
+            const restInput = card.querySelector('.rest-input');
+            const roundsInput = card.querySelector('.rounds-input');
+            const removeBtn = card.querySelector('.remove-timer');
+
+            function updateDisplay() {
+                const mins = String(Math.floor(timeLeft / 60)).padStart(2, '0');
+                const secs = String(timeLeft % 60).padStart(2, '0');
+                display.textContent = `${mins}:${secs}`;
+            }
+
+            function updateStatus() {
+                status.textContent = isResting ? "REST" : "FIGHT";
+                display.classList.toggle('rest', isResting);
+            }
+
+            function updateRoundInfo() {
+                roundDisplay.innerHTML = `Round ${currentRound} of <span id="${timerId}-total-rounds">${totalRounds}</span>`;
+                totalRoundsSpan.textContent = totalRounds;
+            }
+
+            function startTimer() {
+                if (isRunning) return;
+                isRunning = true;
+                startBtn.classList.add('active');
+                pauseBtn.textContent = 'Pause';
+
+                interval = setInterval(() => {
+                    timeLeft--;
+                    updateDisplay();
+
+                    if (timeLeft <= 0) {
+                        // Beep
+                        const beep = new Audio('data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAA');
+                        beep.play().catch(() => {});
+
+                        if (isResting) {
+                            // End rest → next fight
+                            isResting = false;
+                            timeLeft = fightTime;
+                            currentRound++;
+                            if (currentRound > totalRounds) {
+                                endSession();
+                                return;
+                            }
+                            updateRoundInfo();
+                        } else {
+                            // End fight → rest (unless last round)
+                            if (currentRound >= totalRounds) {
+                                endSession();
+                                return;
+                            }
+                            isResting = true;
+                            timeLeft = restTime;
+                        }
+                        updateStatus();
+                    }
+                }, 1000);
+            }
+
+            function pauseTimer() {
+                if (!isRunning) return;
+                clearInterval(interval);
+                isRunning = false;
+                startBtn.classList.remove('active');
+                pauseBtn.textContent = 'Resume';
+            }
+
+            function resumeTimer() {
+                if (isRunning) return;
+                isRunning = true;
+                startBtn.classList.add('active');
+                pauseBtn.textContent = 'Pause';
+                startTimer();
+            }
+
+            function endSession() {
+                clearInterval(interval);
+                isRunning = false;
+                isResting = false;
+                startBtn.classList.remove('active');
+                display.textContent = "DONE!";
+                display.style.color = '#00ff00';
+                status.textContent = "FINISHED";
+            }
+
+            function resetTimer() {
+                clearInterval(interval);
+                isRunning = false;
+                isResting = false;
+                currentRound = 1;
+                fightTime = (parseInt(durationInput.value) || 5) * 60;
+                restTime = parseInt(restInput.value) || 60;
+                timeLeft = fightTime;
+                totalRounds = parseInt(roundsInput.value) || 3;
+                startBtn.classList.remove('active');
+                pauseBtn.textContent = 'Pause';
+                updateDisplay();
+                updateStatus();
+                updateRoundInfo();
+                display.style.color = 'var(--primary)';
+            }
+
+            // Event Listeners
+            startBtn.addEventListener('click', () => {
+                if (pauseBtn.textContent === 'Resume') {
+                    resumeTimer();
+                } else {
+                    startTimer();
+                }
+            });
+
+            pauseBtn.addEventListener('click', () => {
+                if (isRunning) {
+                    pauseTimer();
+                } else if (timeLeft < (isResting ? restTime : fightTime)) {
+                    resumeTimer();
+                }
+            });
+
+            resetBtn.addEventListener('click', resetTimer);
+
+            durationInput.addEventListener('change', () => {
+                const mins = Math.max(1, Math.min(60, parseInt(durationInput.value) || 5));
+                durationInput.value = mins;
+                fightTime = mins * 60;
+                if (!isRunning && !isResting) {
+                    timeLeft = fightTime;
+                    updateDisplay();
+                }
+            });
+
+            restInput.addEventListener('change', () => {
+                const secs = Math.max(0, Math.min(300, parseInt(restInput.value) || 60));
+                restInput.value = secs;
+                restTime = secs;
+                if (!isRunning && isResting) {
+                    timeLeft = restTime;
+                    updateDisplay();
+                }
+            });
+
+            roundsInput.addEventListener('change', () => {
+                totalRounds = Math.max(1, Math.min(50, parseInt(roundsInput.value) || 3));
+                roundsInput.value = totalRounds;
+                updateRoundInfo();
+                if (currentRound > totalRounds) {
+                    currentRound = totalRounds;
+                }
+            });
+
+            removeBtn.addEventListener('click', () => {
+                if (confirm('Remove this timer?')) {
+                    card.remove();
+                    timerCount--;
+                }
+            });
+
+            // Initial setup
+            updateDisplay();
+            updateStatus();
+            updateRoundInfo();
+
+            // Auto-scroll on focus
+            [durationInput, restInput, roundsInput].forEach(input => {
+                input.addEventListener('focus', () => card.scrollIntoView({ behavior: 'smooth', block: 'center' }));
+            });
+        }
+
+        // Add first timer on load
+        document.addEventListener('DOMContentLoaded', () => {
+            createTimer();
+        });
+
+        addTimerBtn.addEventListener('click', createTimer);
+
+        // Remote navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                const focused = document.activeElement;
+                if (focused && focused.click) {
+                    focused.click();
+                }
+            }
+        });
+
+        // Replace logo: document.getElementById('logo-img').src = 'https://yourlogo.com/logo.png';
+    </script>
+</body>
+</html>

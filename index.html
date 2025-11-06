@@ -14,6 +14,8 @@
             --rest: #ff4500;
             --focus-glow: rgba(0, 191, 255, 0.6);
             --stop: #ff3333;
+            --card-bg: rgba(30, 30, 30, 0.9);
+            --card-border: #00bfff;
         }
 
         * {
@@ -30,18 +32,19 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 15px;
+            justify-content: flex-start;
+            padding: 20px;
             overflow-y: auto;
         }
 
         .main-container {
             width: 100%;
-            max-width: 1100px;
+            max-width: 1000px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 30px;
-            margin-top: 40px;
+            gap: 40px;
+            margin-top: 60px;
         }
 
         .title-overlay {
@@ -49,20 +52,21 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            font-size: 4.5rem;
+            font-size: 5.5rem;
             font-weight: bold;
-            color: rgba(255, 255, 255, 0.9);
+            color: #ffffff;
             text-shadow: 
-                0 0 20px rgba(0, 191, 255, 0.8),
-                0 0 40px rgba(0, 191, 255, 0.6),
-                0 0 60px rgba(0, 191, 255, 0.4);
+                0 0 30px #00bfff,
+                0 0 60px #00bfff,
+                0 0 90px #00bfff;
             pointer-events: none;
             z-index: 10;
             text-align: center;
-            letter-spacing: 3px;
+            letter-spacing: 4px;
             white-space: nowrap;
             opacity: 0;
-            transition: opacity 0.6s ease;
+            transition: opacity 0.7s ease;
+            text-transform: uppercase;
         }
 
         .title-overlay.visible {
@@ -70,112 +74,115 @@
         }
 
         .timers-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 40px;
             width: 100%;
-            position: relative;
             z-index: 1;
         }
 
         .timer-card {
-            background: rgba(30, 30, 30, 0.85);
-            border: 2px solid var(--secondary);
-            border-radius: 18px;
-            padding: 28px;
+            background: var(--card-bg);
+            border: 3px solid var(--card-border);
+            border-radius: 24px;
+            padding: 35px;
             text-align: center;
             transition: all 0.3s ease;
             position: relative;
             width: 100%;
-            max-width: 540px;
-            margin: 0 auto;
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
-            backdrop-filter: blur(4px);
+            max-width: 560px;
+            box-shadow: 
+                0 0 40px rgba(0, 191, 255, 0.4),
+                inset 0 0 30px rgba(0, 191, 255, 0.1);
+            backdrop-filter: blur(8px);
         }
 
         .timer-card:focus-within {
-            border-color: var(--focus);
+            border-color: #00ffff;
             box-shadow: 
-                0 0 35px var(--focus-glow), 
-                0 0 60px var(--focus-glow),
-                inset 0 0 20px rgba(0, 191, 255, 0.1);
-            outline: none;
+                0 0 60px rgba(0, 191, 255, 0.8), 
+                0 0 100px rgba(0, 191, 255, 0.6),
+                inset 0 0 40px rgba(0, 191, 255, 0.2);
             transform: scale(1.04);
         }
 
         .timer-display {
-            font-size: 5.8rem;
+            font-size: 6.5rem;
             font-weight: bold;
             color: var(--primary);
-            margin: 20px 0;
-            letter-spacing: 6px;
-            text-shadow: 0 0 16px rgba(0, 191, 255, 0.7);
+            margin: 25px 0;
+            letter-spacing: 8px;
+            text-shadow: 0 0 20px rgba(0, 191, 255, 0.8);
             transition: all 0.3s ease;
         }
 
         .timer-display.rest {
             color: var(--rest);
-            text-shadow: 0 0 16px rgba(255, 69, 0, 0.7);
+            text-shadow: 0 0 20px rgba(255, 69, 0, 0.8);
         }
 
         .status-info {
-            font-size: 1.9rem;
-            color: var(--secondary);
+            font-size: 2.1rem;
+            color: #ffffff;
             margin-bottom: 12px;
             font-weight: bold;
+            text-shadow: 0 0 10px rgba(0, 191, 255, 0.5);
         }
 
         .round-info {
-            font-size: 1.6rem;
-            color: var(--secondary);
-            margin-bottom: 20px;
+            font-size: 1.7rem;
+            color: #cccccc;
+            margin-bottom: 25px;
+            font-weight: 500;
         }
 
         .controls {
             display: flex;
             justify-content: center;
-            gap: 18px;
+            gap: 20px;
             flex-wrap: wrap;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
         }
 
         button {
             background: #222;
             color: var(--text);
-            border: 2px solid var(--secondary);
-            padding: 16px 28px;
-            font-size: 1.35rem;
-            border-radius: 14px;
+            border: 2px solid #555;
+            padding: 18px 32px;
+            font-size: 1.4rem;
+            border-radius: 16px;
             cursor: pointer;
             transition: all 0.25s ease;
-            min-width: 150px;
-            font-weight: 600;
+            min-width: 160px;
+            font-weight: 700;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
         }
 
         button:focus {
-            outline: 6px solid var(--focus);
+            outline: 7px solid var(--focus);
             background: #333;
             border-color: var(--focus);
-            box-shadow: 0 0 22px var(--focus-glow);
-            transform: translateY(-2px);
+            box-shadow: 0 0 30px var(--focus-glow), 0 6px 20px rgba(0, 191, 255, 0.4);
+            transform: translateY(-3px);
         }
 
         button:active, button.active {
             background: var(--primary);
             color: black;
             border-color: var(--primary);
-            transform: translateY(1px);
+            transform: translateY(2px);
         }
 
         .stop-btn {
-            background: #400;
+            background: #500;
             border-color: var(--stop);
         }
 
         .stop-btn:focus {
-            outline: 6px solid var(--stop);
-            background: #600;
-            box-shadow: 0 0 22px rgba(255, 51, 51, 0.7);
+            outline: 7px solid var(--stop);
+            background: #700;
+            box-shadow: 0 0 30px rgba(255, 51, 51, 0.7);
         }
 
         .stop-btn:active {
@@ -184,96 +191,112 @@
         }
 
         .config {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 16px;
-            margin-top: 14px;
+            display: flex;
+            justify-content: center;
+            gap: 18px;
+            margin-top: 16px;
+            flex-wrap: wrap;
         }
 
         .input-group {
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
+            gap: 10px;
+            background: rgba(0, 0, 0, 0.4);
+            padding: 8px 12px;
+            border-radius: 14px;
+            border: 1px solid #444;
         }
 
         input {
-            background: #111;
+            background: #000;
             color: var(--text);
-            border: 1.5px solid var(--secondary);
-            padding: 13px;
-            font-size: 1.2rem;
+            border: 2px solid #555;
+            padding: 14px;
+            font-size: 1.3rem;
             border-radius: 12px;
             text-align: center;
-            width: 76px;
+            width: 80px;
             transition: all 0.3s ease;
+            font-weight: bold;
         }
 
         input:focus {
             outline: 5px solid var(--focus);
             border-color: var(--focus);
-            box-shadow: 0 0 16px var(--focus-glow);
-            transform: scale(1.07);
+            box-shadow: 0 0 20px var(--focus-glow);
+            transform: scale(1.08);
         }
 
         .inc-btn, .dec-btn {
-            width: 44px;
-            height: 44px;
+            width: 48px;
+            height: 48px;
             padding: 0;
-            font-size: 1.7rem;
+            font-size: 1.8rem;
             min-width: auto;
             font-weight: bold;
+            background: #333;
+            border: 2px solid #666;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .inc-btn:focus, .dec-btn:focus {
-            box-shadow: 0 0 20px var(--focus-glow);
+            box-shadow: 0 0 25px var(--focus-glow);
+            border-color: var(--focus);
         }
 
         .add-timer {
             background: transparent;
-            border: 3px dashed var(--secondary);
-            color: var(--secondary);
-            font-size: 1.8rem;
-            padding: 55px;
-            margin: 35px 0;
-            border-radius: 22px;
+            border: 4px dashed #666;
+            color: #cccccc;
+            font-size: 2rem;
+            padding: 60px;
+            margin: 40px 0;
+            border-radius: 28px;
             cursor: pointer;
             transition: all 0.3s ease;
-            min-width: 340px;
+            min-width: 380px;
+            font-weight: bold;
+            text-shadow: 0 0 15px rgba(0, 191, 255, 0.5);
         }
 
         .add-timer:focus {
             border-color: var(--focus);
             color: var(--focus);
             outline: none;
-            box-shadow: 0 0 40px var(--focus-glow);
-            transform: scale(1.05);
+            box-shadow: 0 0 50px var(--focus-glow);
+            transform: scale(1.06);
         }
 
         .remove-timer {
             position: absolute;
-            top: 16px;
-            right: 16px;
-            background: #500;
+            top: 18px;
+            right: 18px;
+            background: #600;
             color: white;
             border: none;
-            width: 40px;
-            height: 40px;
+            width: 44px;
+            height: 44px;
             border-radius: 50%;
-            font-size: 1.5rem;
+            font-size: 1.6rem;
             cursor: pointer;
             transition: all 0.2s ease;
+            font-weight: bold;
         }
 
         .remove-timer:focus {
             background: #f00;
-            outline: 5px solid var(--focus);
-            box-shadow: 0 0 20px var(--focus-glow);
+            outline: 6px solid var(--focus);
+            box-shadow: 0 0 25px var(--focus-glow);
         }
 
         @media (min-width: 768px) {
             .timers-grid {
-                grid-template-columns: repeat(auto-fill, minmax(460px, 1fr));
+                gap: 50px;
             }
         }
 
@@ -290,11 +313,10 @@
 <body>
 
     <div class="main-container">
-        <!-- Title overlay centered on screen -->
         <div class="title-overlay" id="title-overlay">New Journey BJJ</div>
 
         <div class="timers-grid" id="timers-container">
-            <!-- First timer injected here -->
+            <!-- Timer cards go here -->
         </div>
 
         <button class="add-timer" id="add-timer-btn" tabindex="0">
@@ -358,11 +380,11 @@
             tempDiv.innerHTML = timerHTML;
             const card = tempDiv.firstElementChild;
 
+            timersContainer.appendChild(card);
+
             if (isFirst) {
-                timersContainer.appendChild(card);
                 titleOverlay.classList.add('visible');
             } else {
-                timersContainer.appendChild(card);
                 titleOverlay.classList.remove('visible');
             }
 
@@ -371,10 +393,10 @@
                 if (startBtn) startBtn.focus();
             }, 100);
 
-            setupTimerLogic(card, timerId, isFirst);
+            setupTimerLogic(card, timerId);
         }
 
-        function setupTimerLogic(card, timerId, isFirst) {
+        function setupTimerLogic(card, timerId) {
             let fightTime = 300;
             let restTime = 60;
             let timeLeft = fightTime;
@@ -395,7 +417,6 @@
             const roundsInput = document.getElementById(`${timerId}-rounds`);
             const removeBtn = card.querySelector('.remove-timer');
 
-            // Increment/Decrement
             card.querySelectorAll('.inc-btn, .dec-btn').forEach(btn => {
                 btn.addEventListener('click', () => {
                     const targetId = btn.dataset.target;
@@ -491,7 +512,6 @@
                 status.textContent = "FINISHED";
             }
 
-            // Button Logic
             startBtn.addEventListener('click', () => {
                 if (startBtn.textContent === 'Pause') {
                     pauseTimer();
@@ -502,7 +522,6 @@
 
             stopBtn.addEventListener('click', stopTimer);
 
-            // Config changes
             durationInput.addEventListener('change', () => {
                 const mins = Math.max(1, Math.min(60, parseInt(durationInput.value) || 5));
                 durationInput.value = mins;
@@ -540,20 +559,17 @@
                 }
             });
 
-            // Initial
             updateDisplay();
             updateStatus();
             updateRoundInfo();
         }
 
-        // Create first timer on load
         document.addEventListener('DOMContentLoaded', () => {
             createTimer(true);
         });
 
         addTimerBtn.addEventListener('click', () => createTimer(false));
 
-        // Remote navigation
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' || e.key === ' ') {
                 const focused = document.activeElement;

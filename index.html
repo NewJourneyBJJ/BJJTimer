@@ -5,403 +5,402 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>New Journey BJJ Timer</title>
     <style>
-    :root {
-        --bg: #000000;
-        --primary: #00bfff;
-        --secondary: #cccccc;
-        --text: #ffffff;
-        --focus: #00bfff;
-        --rest: #ff4500;
-        --prep: #f0e68c; /* Khaki for prep time */
-        --stop: #ff3b30;
-        --card-bg: rgba(30, 30, 30, 0.95);
-        --card-border: #333;
-        --apple-dark: #1c1c1e;
-        --glow: rgba(0, 191, 255, 0.3);
-    }
-
-    * {
-        box-sizing: border-box;
-        margin: 0;
-        padding: 0;
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    }
-
-    body {
-        background: var(--bg);
-        color: var(--text);
-        min-height: 100vh;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        padding: 0 15px 40px;
-        overflow-y: auto;
-    }
-
-    .header {
-        width: 100%;
-        max-width: 1000px;
-        text-align: center;
-        padding: 35px 0 25px;
-        margin-bottom: 15px;
-    }
-
-    .title {
-        font-size: 4.8rem;
-        font-weight: 800;
-        color: #ffffff;
-        text-shadow: 
-            0 0 15px rgba(0, 191, 255, 0.4),
-            0 0 30px rgba(0, 191, 255, 0.2);
-        letter-spacing: 3px;
-        text-transform: uppercase;
-    }
-
-    .main-container {
-        width: 100%;
-        max-width: 1000px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 55px;
-    }
-
-    .timers-grid {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 55px;
-        width: 100%;
-    }
-
-    .timer-card {
-        background: var(--card-bg);
-        border: 2px solid var(--card-border);
-        border-radius: 28px;
-        padding: 40px;
-        text-align: center;
-        transition: all 0.3s ease;
-        position: relative;
-        width: 100%;
-        max-width: 600px;
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
-    }
-
-    .timer-card:focus-within {
-        border-color: var(--focus);
-        box-shadow: 0 0 25px var(--glow), 0 0 40px var(--glow);
-        transform: scale(1.02);
-    }
-
-    .timer-display {
-        font-size: 7.2rem;
-        font-weight: 700;
-        color: var(--primary);
-        margin: 30px 0;
-        letter-spacing: 10px;
-        text-shadow: 0 0 12px rgba(0, 191, 255, 0.6);
-    }
-
-    .timer-display.rest {
-        color: var(--rest);
-        text-shadow: 0 0 12px rgba(255, 69, 0, 0.6);
-    }
-    
-    .timer-display.prep {
-        color: var(--prep);
-        text-shadow: 0 0 12px rgba(240, 230, 140, 0.6);
-    }
-
-    .status-info {
-        font-size: 2.3rem;
-        color: #ffffff;
-        margin-bottom: 14px;
-        font-weight: 700;
-    }
-
-    .round-info {
-        font-size: 1.8rem;
-        color: #cccccc;
-        margin-bottom: 30px;
-        font-weight: 600;
-    }
-
-    .controls {
-        display: flex;
-        justify-content: center;
-        gap: 26px;
-        flex-wrap: wrap;
-        margin-bottom: 30px;
-    }
-
-    button {
-        background: var(--apple-dark);
-        color: var(--text);
-        border: none;
-        padding: 17px 38px;
-        font-size: 1.5rem;
-        border-radius: 20px;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        min-width: 175px;
-        font-weight: 600;
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.35);
-        position: relative;
-        overflow: hidden;
-    }
-
-    button::before {
-        content: '';
-        position: absolute;
-        top: 0; left: 0; right: 0; bottom: 0;
-        background: linear-gradient(135deg, rgba(255,255,255,0.08), transparent);
-        border-radius: 20px;
-        pointer-events: none;
-    }
-
-    button:focus {
-        outline: 6px solid var(--focus);
-        box-shadow: 0 0 20px var(--glow), 0 6px 18px rgba(0, 191, 255, 0.3);
-        transform: translateY(-2px);
-    }
-
-    button:active, button.active {
-        background: var(--primary);
-        color: black;
-        transform: translateY(1px);
-    }
-
-    .reset-btn {
-        background: #2c0b0e;
-    }
-
-    .reset-btn:focus {
-        outline: 6px solid var(--stop);
-        box-shadow: 0 0 20px rgba(255, 59, 48, 0.5);
-    }
-
-    .reset-btn:active {
-        background: var(--stop);
-        color: white;
-    }
-    
-    .settings-container {
-        display: flex;
-        flex-direction: column; 
-        align-items: center;
-        gap: 20px;
-        margin-bottom: 30px;
-    }
-
-    .setting-row {
-        display: flex;
-        justify-content: center;
-        flex-wrap: wrap; 
-        gap: 20px;
-        width: 100%;
-    }
-
-    .setting-item {
-        background: rgba(0, 0, 0, 0.5);
-        border: 1px solid #444;
-        border-radius: 18px;
-        padding: 14px 18px;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-    }
-    
-    .setting-item input {
-        background: #000;
-        color: var(--text);
-        border: 2px solid #555;
-        padding: 12px;
-        font-size: 1.3rem;
-        border-radius: 12px;
-        text-align: center;
-        width: 70px;
-        font-weight: 700;
-    }
-    
-    .setting-item input:focus {
-        outline: 5px solid var(--focus);
-        border-color: var(--focus);
-    }
-    
-    .setting-item .inc-btn, .setting-item .dec-btn {
-        width: 44px;
-        height: 44px;
-        font-size: 1.6rem;
-        background: #333;
-        border: 2px solid #666;
-        border-radius: 50%;
-        color: white;
-        font-weight: bold;
-        min-width: 44px; 
-        padding: 0; 
-    }
-
-    .setting-item .inc-btn:focus, .setting-item .dec-btn:focus {
-        box-shadow: 0 0 18px var(--glow);
-        border-color: var(--focus);
-    }
-
-    .setting-label {
-        font-size: 1.3rem;
-        color: #aaa;
-        font-weight: 600;
-    }
-    
-    .round-controls {
-        display: flex;
-        gap: 15px;
-        margin-top: 10px; 
-    }
-    
-    .round-controls button {
-        min-width: 60px;
-        font-size: 1.8rem;
-        padding: 10px;
-    }
-
-    .rounds-container {
-        display: flex;
-        flex-wrap: wrap; 
-        justify-content: center; 
-        gap: 16px;
-        margin-top: 30px; 
-        width: 100%;
-    }
-
-    .round-timer {
-        background: rgba(0, 0, 0, 0.5);
-        border: 1px solid #444;
-        border-radius: 18px;
-        padding: 14px 18px;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        justify-content: space-between;
-
-        /* --- THIS IS THE FIX --- */
-        flex: 1 1 180px;  /* Grow, Shrink, Basis */
-        max-width: 300px; /* Stop it from growing too wide */
-        /* --- END FIX --- */
-    }
-
-
-    .round-timer input {
-        background: #000;
-        color: var(--text);
-        border: 2px solid #555;
-        padding: 12px;
-        font-size: 1.3rem;
-        border-radius: 12px;
-        text-align: center;
-        width: 70px;
-        font-weight: 700;
-    }
-
-    .round-timer input:focus {
-        outline: 5px solid var(--focus);
-        border-color: var(--focus);
-    }
-
-    .round-timer .inc-btn, .round-timer .dec-btn {
-        width: 44px;
-        height: 44px;
-        font-size: 1.6rem;
-        background: #333;
-        border: 2px solid #666;
-        border-radius: 50%;
-        color: white;
-        font-weight: bold;
-        min-width: 44px; 
-        padding: 0; 
-    }
-
-    .round-timer .inc-btn:focus, .round-timer .dec-btn:focus {
-        box-shadow: 0 0 18px var(--glow);
-        border-color: var(--focus);
-    }
-
-    .round-label {
-        font-size: 1.3rem;
-        color: #aaa;
-        font-weight: 600;
-        margin-left: auto; 
-    }
-    
-    .round-timer .input-group {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-
-    .add-timer {
-        background: transparent;
-        border: 3px dashed #555;
-        color: #bbbbbb;
-        font-size: 2.1rem;
-        padding: 65px;
-        margin: 50px 0;
-        border-radius: 32px;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        min-width: 400px;
-        font-weight: 700;
-    }
-
-    .add-timer:focus {
-        border-color: var(--focus);
-        color: var(--focus);
-        outline: none;
-        box-shadow: 0 0 30px var(--glow);
-        transform: scale(1.04);
-    }
-
-    .remove-timer {
-        position: absolute;
-        top: 22px;
-        right: 22px;
-        background: #600;
-        color: white;
-        border: none;
-        width: 50px;
-        height: 50px;
-        border-radius: 50%;
-        font-size: 1.8rem;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        font-weight: bold;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        min-width: 50px; 
-        padding: 0; 
-    }
-
-    .remove-timer:focus {
-        background: #f00;
-        outline: 5px solid var(--focus);
-        box-shadow: 0 0 20px var(--glow);
-    }
-
-    @media (min-width: 768px) {
-        .timers-grid {
-            gap: 65px;
+        :root {
+            --bg: #000000;
+            --primary: #00bfff;
+            --secondary: #cccccc;
+            --text: #ffffff;
+            --focus: #00bfff;
+            --rest: #ff4500;
+            --prep: #f0e68c; /* Khaki for prep time */
+            --stop: #ff3b30;
+            --card-bg: rgba(30, 30, 30, 0.95);
+            --card-border: #333;
+            --apple-dark: #1c1c1e;
+            --glow: rgba(0, 191, 255, 0.3);
         }
-    }
 
-    button, input, .timer-card, .add-timer {
-        -webkit-tap-highlight-color: transparent;
-    }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
 
-    *:focus {
-        position: relative;
-        z-index: 15;
-    }
-</style>
+        body {
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 0 15px 40px;
+            overflow-y: auto;
+        }
+
+        .header {
+            width: 100%;
+            max-width: 1000px;
+            text-align: center;
+            padding: 35px 0 25px;
+            margin-bottom: 15px;
+        }
+
+        .title {
+            font-size: 4.8rem;
+            font-weight: 800;
+            color: #ffffff;
+            text-shadow: 
+                0 0 15px rgba(0, 191, 255, 0.4),
+                0 0 30px rgba(0, 191, 255, 0.2);
+            letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+
+        .main-container {
+            width: 100%;
+            max-width: 1000px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 55px;
+        }
+
+        .timers-grid {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 55px;
+            width: 100%;
+        }
+
+        .timer-card {
+            background: var(--card-bg);
+            border: 2px solid var(--card-border);
+            border-radius: 28px;
+            padding: 40px;
+            text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+        }
+
+        .timer-card:focus-within {
+            border-color: var(--focus);
+            box-shadow: 0 0 25px var(--glow), 0 0 40px var(--glow);
+            transform: scale(1.02);
+        }
+
+        .timer-display {
+            font-size: 7.2rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin: 30px 0;
+            letter-spacing: 10px;
+            text-shadow: 0 0 12px rgba(0, 191, 255, 0.6);
+        }
+
+        .timer-display.rest {
+            color: var(--rest);
+            text-shadow: 0 0 12px rgba(255, 69, 0, 0.6);
+        }
+        
+        .timer-display.prep {
+            color: var(--prep);
+            text-shadow: 0 0 12px rgba(240, 230, 140, 0.6);
+        }
+
+        .status-info {
+            font-size: 2.3rem;
+            color: #ffffff;
+            margin-bottom: 14px;
+            font-weight: 700;
+        }
+
+        .round-info {
+            font-size: 1.8rem;
+            color: #cccccc;
+            margin-bottom: 30px;
+            font-weight: 600;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 26px;
+            flex-wrap: wrap;
+            margin-bottom: 30px;
+        }
+
+        button {
+            background: var(--apple-dark);
+            color: var(--text);
+            border: none;
+            padding: 17px 38px;
+            font-size: 1.5rem;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            min-width: 175px;
+            font-weight: 600;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.35);
+            position: relative;
+            overflow: hidden;
+        }
+
+        button::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.08), transparent);
+            border-radius: 20px;
+            pointer-events: none;
+        }
+
+        button:focus {
+            outline: 6px solid var(--focus);
+            box-shadow: 0 0 20px var(--glow), 0 6px 18px rgba(0, 191, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        button:active, button.active {
+            background: var(--primary);
+            color: black;
+            transform: translateY(1px);
+        }
+
+        .reset-btn {
+            background: #2c0b0e;
+        }
+
+        .reset-btn:focus {
+            outline: 6px solid var(--stop);
+            box-shadow: 0 0 20px rgba(255, 59, 48, 0.5);
+        }
+
+        .reset-btn:active {
+            background: var(--stop);
+            color: white;
+        }
+        
+        .settings-container {
+            display: flex;
+            flex-direction: column; 
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .setting-row {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap; 
+            gap: 20px;
+            width: 100%;
+        }
+
+        .setting-item {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid #444;
+            border-radius: 18px;
+            padding: 14px 18px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .setting-item input {
+            background: #000;
+            color: var(--text);
+            border: 2px solid #555;
+            padding: 12px;
+            font-size: 1.3rem;
+            border-radius: 12px;
+            text-align: center;
+            width: 70px;
+            font-weight: 700;
+        }
+        
+        .setting-item input:focus {
+            outline: 5px solid var(--focus);
+            border-color: var(--focus);
+        }
+        
+        .setting-item .inc-btn, .setting-item .dec-btn {
+            width: 44px;
+            height: 44px;
+            font-size: 1.6rem;
+            background: #333;
+            border: 2px solid #666;
+            border-radius: 50%;
+            color: white;
+            font-weight: bold;
+            min-width: 44px; 
+            padding: 0; 
+        }
+
+        .setting-item .inc-btn:focus, .setting-item .dec-btn:focus {
+            box-shadow: 0 0 18px var(--glow);
+            border-color: var(--focus);
+        }
+
+        .setting-label {
+            font-size: 1.3rem;
+            color: #aaa;
+            font-weight: 600;
+        }
+        
+        .round-controls {
+            display: flex;
+            gap: 15px;
+            margin-top: 10px; 
+        }
+        
+        .round-controls button {
+            min-width: 60px;
+            font-size: 1.8rem;
+            padding: 10px;
+        }
+
+        /* This container handles the horizontal layout for rounds */
+        .rounds-container {
+            display: flex;
+            flex-wrap: wrap; 
+            justify-content: center; 
+            gap: 16px;
+            margin-top: 30px; 
+            width: 100%;
+        }
+
+        /* This styles each individual round */
+        .round-timer {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid #444;
+            border-radius: 18px;
+            padding: 14px 18px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            justify-content: space-between;
+            flex: 1 1 180px;  /* This allows it to grow/shrink horizontally */
+            max-width: 300px; /* This stops it from getting too big */
+        }
+
+
+        .round-timer input {
+            background: #000;
+            color: var(--text);
+            border: 2px solid #555;
+            padding: 12px;
+            font-size: 1.3rem;
+            border-radius: 12px;
+            text-align: center;
+            width: 70px;
+            font-weight: 700;
+        }
+
+        .round-timer input:focus {
+            outline: 5px solid var(--focus);
+            border-color: var(--focus);
+        }
+
+        .round-timer .inc-btn, .round-timer .dec-btn {
+            width: 44px;
+            height: 44px;
+            font-size: 1.6rem;
+            background: #333;
+            border: 2px solid #666;
+            border-radius: 50%;
+            color: white;
+            font-weight: bold;
+            min-width: 44px; 
+            padding: 0; 
+        }
+
+        .round-timer .inc-btn:focus, .round-timer .dec-btn:focus {
+            box-shadow: 0 0 18px var(--glow);
+            border-color: var(--focus);
+        }
+
+        .round-label {
+            font-size: 1.3rem;
+            color: #aaa;
+            font-weight: 600;
+            margin-left: auto; 
+        }
+        
+        .round-timer .input-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .add-timer {
+            background: transparent;
+            border: 3px dashed #555;
+            color: #bbbbbb;
+            font-size: 2.1rem;
+            padding: 65px;
+            margin: 50px 0;
+            border-radius: 32px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 400px;
+            font-weight: 700;
+        }
+
+        .add-timer:focus {
+            border-color: var(--focus);
+            color: var(--focus);
+            outline: none;
+            box-shadow: 0 0 30px var(--glow);
+            transform: scale(1.04);
+        }
+
+        .remove-timer {
+            position: absolute;
+            top: 22px;
+            right: 22px;
+            background: #600;
+            color: white;
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            font-size: 1.8rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 50px; 
+            padding: 0; 
+        }
+
+        .remove-timer:focus {
+            background: #f00;
+            outline: 5px solid var(--focus);
+            box-shadow: 0 0 20px var(--glow);
+        }
+
+        @media (min-width: 768px) {
+            .timers-grid {
+                gap: 65px;
+            }
+        }
+
+        button, input, .timer-card, .add-timer {
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        *:focus {
+            position: relative;
+            z-index: 15;
+        }
+    </style>
 </head>
 <body>
 
@@ -424,14 +423,10 @@
         const timersContainer = document.getElementById('timers-container');
         const addTimerBtn = document.getElementById('add-timer-btn');
 
-        // --- NEW AUDIO SYSTEM ---
+        // --- AUDIO SYSTEM ---
 
-        let audioCtx = null; // Our AudioContext
+        let audioCtx = null; 
         
-        /**
-         * Initializes the AudioContext. 
-         * Must be called by a user interaction (e.g., a click).
-         */
         function initAudio() {
             if (!audioCtx) {
                 try {
@@ -448,8 +443,8 @@
          * @param {number} duration - Duration in milliseconds
          * @param {string} type - 'sine', 'square', 'sawtooth', 'triangle'
          */
-        function playBeep(frequency, duration, type = 'sine') {
-            if (!audioCtx) return; // Audio not initialized
+        function playBeep(frequency, duration, type = 'square') { // Changed default to 'square'
+            if (!audioCtx) return; 
 
             const oscillator = audioCtx.createOscillator();
             const gainNode = audioCtx.createGain();
@@ -457,9 +452,7 @@
             oscillator.connect(gainNode);
             gainNode.connect(audioCtx.destination);
 
-            // Set volume
             gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
-            // Fade in slightly to avoid "click"
             gainNode.gain.linearRampToValueAtTime(0.6, audioCtx.currentTime + 0.01); 
 
             oscillator.type = type;
@@ -467,7 +460,6 @@
 
             oscillator.start(audioCtx.currentTime);
             
-            // Fade out
             gainNode.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration / 1000);
             oscillator.stop(audioCtx.currentTime + duration / 1000);
         }
@@ -475,12 +467,19 @@
         /** Plays the 10-second warning (two short beeps) */
         function playWarningBeep() {
             if (!audioCtx) return;
-            playBeep(900, 150, 'triangle');
-            // Play a second beep 200ms after the first one starts
-            setTimeout(() => playBeep(900, 150, 'triangle'), 200);
+            playBeep(900, 150, 'square');
+            setTimeout(() => playBeep(900, 150, 'square'), 200);
         }
         
-        // --- END NEW AUDIO SYSTEM ---
+        /** Plays three short beeps for round start */
+        function playTripleBeep() {
+            if (!audioCtx) return;
+            playBeep(880, 150, 'square'); // Beep 1
+            setTimeout(() => playBeep(880, 150, 'square'), 200); // Beep 2
+            setTimeout(() => playBeep(880, 150, 'square'), 400); // Beep 3
+        }
+        
+        // --- END AUDIO SYSTEM ---
 
 
         function createTimer() {
@@ -515,7 +514,7 @@
                             </div>
                             <div class="setting-item">
                                 <button class="dec-btn" data-target="${timerId}-rest-time">-</button>
-                                <input type="number" id="${timerId}-rest-time" min="0" max="300" value="60" />
+                                <input type="number" id="${timerId}-rest-time" min="0" max="300" value="10" />
                                 <button class="inc-btn" data-target="${timerId}-rest-time">+</button>
                                 <span class="setting-label">Rest (s)</span>
                             </div>
@@ -600,7 +599,7 @@
         function setupTimerLogic(card, timerId) {
             let roundTimes = []; 
             let prepTime = 10; 
-            let restTime = 60; 
+            let restTime = 10; // Default logic
             let timeLeft = 0;
             let totalRounds = 0;
             let currentRound = 1;
@@ -675,22 +674,20 @@
             function startTimer() {
                 if (isRunning) return;
                 
-                // --- Initialize Audio on first start click ---
                 initAudio(); 
                 
                 isRunning = true;
                 startBtn.textContent = 'Pause';
                 startBtn.classList.add('active');
 
-                // Check for prep time
                 if (currentRound === 1 && !isResting && !isPrepping && prepTime > 0 && timeLeft === roundTimes[0]) {
                     isPrepping = true;
                     timeLeft = prepTime;
-                    playBeep(660, 150, 'triangle'); // Prep beep
+                    playBeep(660, 150, 'square'); // Prep beep
                     updateStatus();
                     updateDisplay();
                 } else {
-                     playBeep(880, 200); // Regular start beep
+                     playTripleBeep(); // Regular start
                 }
                 
                 warningPlayed = false;
@@ -699,7 +696,6 @@
                     timeLeft--;
                     updateDisplay();
 
-                    // 10-second warning
                     if (timeLeft === 10 && !isResting && !isPrepping && !warningPlayed) {
                         playWarningBeep();
                         warningPlayed = true;
@@ -712,7 +708,7 @@
                             isResting = false;
                             timeLeft = roundTimes[0];
                             warningPlayed = false;
-                            playBeep(880, 200); // Round start
+                            playTripleBeep(); // Round start
                         } else if (isResting) {
                             // End rest -> next round
                             isResting = false;
@@ -723,7 +719,7 @@
                             }
                             timeLeft = roundTimes[currentRound - 1];
                             warningPlayed = false;
-                            playBeep(880, 200); // Round start
+                            playTripleBeep(); // Round start
                             updateRoundInfo();
                         } else {
                             // End fight round
@@ -733,7 +729,7 @@
                             }
                             isResting = true;
                             timeLeft = restTime;
-                            playBeep(440, 500); // Round end / Rest start
+                            playBeep(440, 500, 'square'); // Round end / Rest start
                         }
                         updateStatus();
                     }
@@ -754,7 +750,8 @@
                 isPrepping = false;
                 currentRound = 1;
                 prepTime = parseInt(prepInput.value) || 0;
-                restTime = parseInt(restInput.value) || 60;
+                // THIS IS THE CHANGED DEFAULT
+                restTime = parseInt(restInput.value) || 10; 
                 updateRoundTimes(); 
                 startBtn.textContent = 'Start';
                 startBtn.classList.remove('active');
@@ -775,9 +772,8 @@
                 display.style.color = '#00ff00';
                 status.textContent = "FINISHED";
                 
-                // Play final buzzer
-                playBeep(440, 500);
-                setTimeout(() => playBeep(440, 500), 600);
+                playBeep(440, 500, 'square');
+                setTimeout(() => playBeep(440, 500, 'square'), 600);
             }
 
             // Event Listeners
@@ -796,7 +792,7 @@
             });
             
             restInput.addEventListener('change', () => {
-                restTime = parseInt(restInput.value) || 60;
+                restTime = parseInt(restInput.value) || 10; // Update fallback
             });
 
             addRoundBtn.addEventListener('click', () => {
@@ -831,7 +827,7 @@
         });
 
         addTimerBtn.addEventListener('click', () => {
-            initAudio(); // Initialize audio on this click too!
+            initAudio(); 
             createTimer();
         });
 
@@ -847,4 +843,3 @@
     </script>
 </body>
 </html>
-

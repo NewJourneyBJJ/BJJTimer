@@ -34,7 +34,9 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 0 15px 40px;
+            /* --- THIS IS THE FIX --- */
+            padding: 0 0 40px 0; /* Removed horizontal padding */
+            /* --- END FIX --- */
             overflow-y: auto;
         }
 
@@ -42,13 +44,13 @@
             width: 100%;
             max-width: 1000px;
             text-align: center;
-            padding: 35px 0 25px;
+            padding: 35px 15px 25px 15px; /* Added padding here */
             margin-bottom: 15px;
         }
 
         .logo-image {
-            width: 124px;
-            height: 75px;
+            width: 120px;
+            height: 70px;
             margin-bottom: 15px;
         }
 
@@ -70,6 +72,7 @@
             flex-direction: column;
             align-items: center;
             gap: 55px;
+            padding: 0 15px; /* Added padding here */
         }
 
         .timers-grid {
@@ -92,6 +95,14 @@
             max-width: 1000px; 
             box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
         }
+        
+        /* Added media query for small screen padding */
+        @media (max-width: 600px) {
+            .timer-card {
+                padding: 30px 20px;
+            }
+        }
+
 
         .timer-card:focus-within {
             border-color: var(--focus);
@@ -106,6 +117,16 @@
             margin: 30px 0;
             letter-spacing: 10px;
             text-shadow: 0 0 12px rgba(0, 191, 255, 0.6);
+        }
+        
+        /* Added media query for small screen text */
+        @media (max-width: 600px) {
+            .title {
+                font-size: 3rem;
+            }
+            .timer-display {
+                font-size: 5rem;
+            }
         }
 
         .timer-display.rest {
@@ -155,6 +176,18 @@
             position: relative;
             overflow: hidden;
         }
+        
+        @media (max-width: 400px) {
+            .controls {
+                gap: 15px;
+            }
+            button {
+                min-width: 140px;
+                padding: 15px 25px;
+                font-size: 1.2rem;
+            }
+        }
+
 
         button::before {
             content: '';
@@ -352,7 +385,18 @@
             transition: all 0.3s ease;
             min-width: 400px;
             font-weight: 700;
+            width: 100%; /* Make it fill container width */
         }
+        
+        @media (max-width: 600px) {
+            .add-timer {
+                min-width: 0;
+                width: 100%;
+                font-size: 1.5rem;
+                padding: 40px;
+            }
+        }
+
 
         .add-timer:focus {
             border-color: var(--focus);
@@ -382,6 +426,17 @@
             min-width: 50px; 
             padding: 0; 
         }
+        
+        @media (max-width: 600px) {
+            .remove-timer {
+                top: 15px;
+                right: 15px;
+                width: 40px;
+                height: 40px;
+                font-size: 1.4rem;
+            }
+        }
+
 
         .remove-timer:focus {
             background: #f00;
@@ -567,9 +622,6 @@
                     let val = parseInt(input.value) || 1;
                     val += btn.classList.contains('inc-btn') ? 1 : -1;
                     input.value = Math.max(1, Math.min(60, val));
-                    
-                    // --- THIS IS THE FIX ---
-                    // Manually dispatch an 'input' event to trigger the main listener
                     input.dispatchEvent(new Event('input', { bubbles: true }));
                 });
             });
@@ -808,17 +860,11 @@
                 updateRoundLabels();
             });
 
-            // --- THIS IS THE FIX ---
-            // This listener updates the main timer whenever a round input is changed.
             roundsContainer.addEventListener('input', (e) => {
-                 // Only fire if it's an input and the timer isn't running
                  if (e.target.tagName === 'INPUT' && !isRunning) {
-                    // resetTimer() re-reads all inputs and syncs the main timer
-                    // to the Round 1 value.
                     resetTimer();
                  }
             });
-            // --- END FIX ---
 
             removeBtn.addEventListener('click', () => {
                 card.remove();
@@ -849,8 +895,3 @@
     </script>
 </body>
 </html>
-
-
-
-
-

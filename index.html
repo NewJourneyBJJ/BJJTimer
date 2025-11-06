@@ -7,11 +7,12 @@
     <style>
         :root {
             --bg: #000000;
-            --primary: #00bfff;     /* Light blue */
-            --secondary: #cccccc;   /* Light gray */
+            --primary: #00bfff;
+            --secondary: #cccccc;
             --text: #ffffff;
             --focus: #00bfff;
             --rest: #ff4500;
+            --focus-glow: rgba(0, 191, 255, 0.6);
         }
 
         * {
@@ -28,67 +29,91 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 20px;
+            padding: 15px;
             overflow-y: auto;
         }
 
         .logo-container {
-            margin: 30px 0 40px;
+            margin: 20px 0 30px;
             text-align: center;
+            width: 100%;
+            display: flex;
+            justify-content: center;
         }
 
         .logo {
-            height: 120px;
+            height: 90px;
+            width: auto;
             filter: brightness(0) invert(1);
+            transition: transform 0.2s ease;
         }
 
-        .container {
+        .logo:focus {
+            outline: none;
+            transform: scale(1.05);
+        }
+
+        .main-container {
             width: 100%;
-            max-width: 1000px;
+            max-width: 1100px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .timers-grid {
             display: grid;
             grid-template-columns: 1fr;
             gap: 20px;
+            width: 100%;
         }
 
         .timer-card {
             background: rgba(30, 30, 30, 0.8);
             border: 2px solid var(--secondary);
             border-radius: 16px;
-            padding: 20px;
+            padding: 22px;
             text-align: center;
             transition: all 0.3s ease;
             position: relative;
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
         }
 
         .timer-card:focus-within {
             border-color: var(--focus);
-            box-shadow: 0 0 20px rgba(0, 191, 255, 0.5);
+            box-shadow: 0 0 25px var(--focus-glow), 0 0 40px var(--focus-glow);
             outline: none;
+            transform: scale(1.02);
         }
 
         .timer-display {
-            font-size: 4.5rem;
+            font-size: 4.8rem;
             font-weight: bold;
             color: var(--primary);
             margin: 15px 0;
             letter-spacing: 4px;
-            text-shadow: 0 0 10px rgba(0, 191, 255, 0.4);
+            text-shadow: 0 0 12px rgba(0, 191, 255, 0.5);
+            transition: all 0.3s ease;
         }
 
         .timer-display.rest {
             color: var(--rest);
-            text-shadow: 0 0 10px rgba(255, 69, 0, 0.4);
+            text-shadow: 0 0 12px rgba(255, 69, 0, 0.5);
         }
 
         .status-info {
-            font-size: 1.6rem;
+            font-size: 1.7rem;
             color: var(--secondary);
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             font-weight: bold;
+            transition: color 0.3s ease;
         }
 
         .round-info {
-            font-size: 1.4rem;
+            font-size: 1.45rem;
             color: var(--secondary);
             margin-bottom: 15px;
         }
@@ -96,7 +121,7 @@
         .controls {
             display: flex;
             justify-content: center;
-            gap: 12px;
+            gap: 14px;
             flex-wrap: wrap;
             margin-bottom: 15px;
         }
@@ -105,109 +130,150 @@
             background: #222;
             color: var(--text);
             border: 2px solid var(--secondary);
-            padding: 12px 20px;
-            font-size: 1.2rem;
-            border-radius: 10px;
+            padding: 14px 22px;
+            font-size: 1.25rem;
+            border-radius: 12px;
             cursor: pointer;
-            transition: all 0.2s;
-            min-width: 120px;
+            transition: all 0.25s ease;
+            min-width: 130px;
+            font-weight: 600;
         }
 
         button:focus {
-            outline: 4px solid var(--focus);
+            outline: 5px solid var(--focus);
             background: #333;
             border-color: var(--focus);
+            box-shadow: 0 0 15px var(--focus-glow);
+            transform: translateY(-1px);
         }
 
         button:active, button.active {
             background: var(--primary);
             color: black;
             border-color: var(--primary);
+            transform: translateY(1px);
         }
 
         .config {
             display: grid;
             grid-template-columns: 1fr 1fr 1fr;
-            gap: 10px;
+            gap: 12px;
             margin-top: 10px;
+        }
+
+        .input-group {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
         }
 
         input {
             background: #111;
             color: var(--text);
-            border: 1px solid var(--secondary);
-            padding: 10px;
-            font-size: 1rem;
-            border-radius: 8px;
+            border: 1.5px solid var(--secondary);
+            padding: 11px;
+            font-size: 1.1rem;
+            border-radius: 10px;
             text-align: center;
+            width: 68px;
+            transition: all 0.3s ease;
         }
 
         input:focus {
-            outline: 3px solid var(--focus);
+            outline: 4px solid var(--focus);
             border-color: var(--focus);
+            box-shadow: 0 0 12px var(--focus-glow);
+            transform: scale(1.05);
+        }
+
+        .inc-btn, .dec-btn {
+            width: 40px;
+            height: 40px;
+            padding: 0;
+            font-size: 1.5rem;
+            min-width: auto;
+            font-weight: bold;
+        }
+
+        .inc-btn:focus, .dec-btn:focus {
+            box-shadow: 0 0 15px var(--focus-glow);
         }
 
         .add-timer {
             background: transparent;
             border: 3px dashed var(--secondary);
             color: var(--secondary);
-            font-size: 1.5rem;
-            padding: 40px;
-            margin: 20px 0;
-            border-radius: 16px;
+            font-size: 1.6rem;
+            padding: 45px;
+            margin: 25px 0;
+            border-radius: 18px;
             cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 300px;
         }
 
         .add-timer:focus {
             border-color: var(--focus);
             color: var(--focus);
             outline: none;
+            box-shadow: 0 0 30px var(--focus-glow);
+            transform: scale(1.03);
         }
 
         .remove-timer {
             position: absolute;
-            top: 10px;
-            right: 10px;
-            background: #400;
+            top: 12px;
+            right: 12px;
+            background: #500;
             color: white;
             border: none;
-            width: 32px;
-            height: 32px;
+            width: 36px;
+            height: 36px;
             border-radius: 50%;
-            font-size: 1.2rem;
+            font-size: 1.3rem;
             cursor: pointer;
+            transition: all 0.2s ease;
         }
 
         .remove-timer:focus {
             background: #f00;
-            outline: 3px solid var(--focus);
+            outline: 4px solid var(--focus);
+            box-shadow: 0 0 15px var(--focus-glow);
         }
 
         @media (min-width: 768px) {
-            .container {
-                grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+            .timers-grid {
+                grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
             }
         }
 
-        /* Fire TV: Ensure focus is visible */
         button, input, .timer-card, .add-timer {
             -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Enhanced focus glow for all interactive elements */
+        *:focus {
+            position: relative;
+            z-index: 10;
         }
     </style>
 </head>
 <body>
 
     <div class="logo-container">
-        <img src="https://via.placeholder.com/300x120/00bfff/000000?text=MMA+TIMER+PRO" alt="Logo" class="logo" id="logo-img" />
+        <img src="https://i.imgur.com/8wL8g3J.png" alt="New Journey Jiu Jitsu Logo" class="logo" tabindex="0" />
     </div>
 
-    <div class="container" id="timers-container">
-        <!-- Timers will be injected here -->
-    </div>
+    <div class="main-container">
+        <div class="timers-grid" id="timers-container">
+            <!-- Timers will be injected here -->
+        </div>
 
-    <button class="add-timer" id="add-timer-btn" tabindex="0">
-        + Add New Timer (Up to 20)
-    </button>
+        <button class="add-timer" id="add-timer-btn" tabindex="0">
+            + Add New Timer (Up to 20)
+        </button>
+    </div>
 
     <script>
         const MAX_TIMERS = 20;
@@ -239,9 +305,24 @@
                     </div>
 
                     <div class="config">
-                        <input type="number" class="duration-input" data-id="${timerId}" placeholder="Fight (min)" min="1" max="60" value="5" />
-                        <input type="number" class="rest-input" data-id="${timerId}" placeholder="Rest (sec)" min="0" max="300" value="60" />
-                        <input type="number" class="rounds-input" data-id="${timerId}" placeholder="Rounds" min="1" max="50" value="3" />
+                        <div class="input-group">
+                            <button class="dec-btn" data-target="${timerId}-duration">-</button>
+                            <input type="number" class="duration-input" id="${timerId}-duration" min="1" max="60" value="5" />
+                            <button class="inc-btn" data-target="${timerId}-duration">+</button>
+                            <span>min</span>
+                        </div>
+                        <div class="input-group">
+                            <button class="dec-btn" data-target="${timerId}-rest">-</button>
+                            <input type="number" class="rest-input" id="${timerId}-rest" min="0" max="300" value="60" />
+                            <button class="inc-btn" data-target="${timerId}-rest">+</button>
+                            <span>sec rest</span>
+                        </div>
+                        <div class="input-group">
+                            <button class="dec-btn" data-target="${timerId}-rounds">-</button>
+                            <input type="number" class="rounds-input" id="${timerId}-rounds" min="1" max="50" value="3" />
+                            <button class="inc-btn" data-target="${timerId}-rounds">+</button>
+                            <span>rounds</span>
+                        </div>
                     </div>
                 </div>
             `;
@@ -249,16 +330,19 @@
             const tempDiv = document.createElement('div');
             tempDiv.innerHTML = timerHTML;
             const card = tempDiv.firstElementChild;
-            timersContainer.insertBefore(card, addTimerBtn);
+            timersContainer.appendChild(card);
 
-            setTimeout(() => card.querySelector('.start-btn').focus(), 100);
+            setTimeout(() => {
+                const startBtn = card.querySelector('.start-btn');
+                if (startBtn) startBtn.focus();
+            }, 100);
 
             setupTimerLogic(card, timerId);
         }
 
         function setupTimerLogic(card, timerId) {
-            let fightTime = 300;     // 5 min
-            let restTime = 60;       // 60 sec
+            let fightTime = 300;
+            let restTime = 60;
             let timeLeft = fightTime;
             let totalRounds = 3;
             let currentRound = 1;
@@ -273,10 +357,26 @@
             const startBtn = card.querySelector('.start-btn');
             const pauseBtn = card.querySelector('.pause-btn');
             const resetBtn = card.querySelector('.reset-btn');
-            const durationInput = card.querySelector('.duration-input');
-            const restInput = card.querySelector('.rest-input');
-            const roundsInput = card.querySelector('.rounds-input');
+            const durationInput = document.getElementById(`${timerId}-duration`);
+            const restInput = document.getElementById(`${timerId}-rest`);
+            const roundsInput = document.getElementById(`${timerId}-rounds`);
             const removeBtn = card.querySelector('.remove-timer');
+
+            // Increment/Decrement buttons
+            card.querySelectorAll('.inc-btn, .dec-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const targetId = btn.dataset.target;
+                    const input = document.getElementById(targetId);
+                    let value = parseInt(input.value) || 0;
+                    if (btn.classList.contains('inc-btn')) {
+                        value++;
+                    } else {
+                        value--;
+                    }
+                    input.value = Math.max(parseInt(input.min), Math.min(parseInt(input.max), value));
+                    input.dispatchEvent(new Event('change'));
+                });
+            });
 
             function updateDisplay() {
                 const mins = String(Math.floor(timeLeft / 60)).padStart(2, '0');
@@ -305,12 +405,10 @@
                     updateDisplay();
 
                     if (timeLeft <= 0) {
-                        // Beep
                         const beep = new Audio('data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAA');
                         beep.play().catch(() => {});
 
                         if (isResting) {
-                            // End rest → next fight
                             isResting = false;
                             timeLeft = fightTime;
                             currentRound++;
@@ -320,9 +418,8 @@
                             }
                             updateRoundInfo();
                         } else {
-                            // End fight → rest (unless last round)
                             if (currentRound >= totalRounds) {
-                                endSession();
+                                end deySession();
                                 return;
                             }
                             isResting = true;
@@ -435,11 +532,6 @@
             updateDisplay();
             updateStatus();
             updateRoundInfo();
-
-            // Auto-scroll on focus
-            [durationInput, restInput, roundsInput].forEach(input => {
-                input.addEventListener('focus', () => card.scrollIntoView({ behavior: 'smooth', block: 'center' }));
-            });
         }
 
         // Add first timer on load
@@ -449,17 +541,16 @@
 
         addTimerBtn.addEventListener('click', createTimer);
 
-        // Remote navigation
+        // Remote navigation - Enter/Space to activate
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' || e.key === ' ') {
                 const focused = document.activeElement;
-                if (focused && focused.click) {
+                if (focused && focused.click && !focused.disabled) {
+                    e.preventDefault();
                     focused.click();
                 }
             }
         });
-
-        // Replace logo: document.getElementById('logo-img').src = 'https://yourlogo.com/logo.png';
     </script>
 </body>
 </html>

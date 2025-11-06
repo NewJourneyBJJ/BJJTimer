@@ -46,6 +46,14 @@
             margin-bottom: 15px;
         }
 
+        /* --- NEW CSS FOR THE LOGO --- */
+        .logo-image {
+            width: 84px;
+            height: 70px;
+            margin-bottom: 15px; /* Adds space between logo and title */
+        }
+        /* --- END NEW CSS --- */
+
         .title {
             font-size: 4.8rem;
             font-weight: 800;
@@ -83,8 +91,7 @@
             transition: all 0.3s ease;
             position: relative;
             width: 100%;
-            /* --- THIS IS THE FIX --- */
-            max-width: 1000px; /* Widened for TV layout */
+            max-width: 1000px; 
             box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
         }
 
@@ -283,11 +290,7 @@
             align-items: center;
             gap: 12px;
             justify-content: space-between;
-
-            /* --- THIS IS THE FIX --- */
-            /* Don't grow, Can shrink, Basis of 280px */
             flex: 0 1 280px; 
-            /* This will create 3+ columns on your wide card */
         }
 
 
@@ -407,9 +410,9 @@
 <body>
 
     <div class="header">
+        <img src="https://static.wixstatic.com/media/9fb4f8_94caa41aaf594d4cb51d3d56016cc073~mv2.png/v1/crop/x_242,y_107,w_535,h_442/fill/w_84,h_70,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/Test%20Logo_edited.png" alt="Logo" class="logo-image">
         <h1 class="title">New Journey BJJ</h1>
     </div>
-
     <div class="main-container">
         <div class="timers-grid" id="timers-container">
             </div>
@@ -632,7 +635,6 @@
                 totalRoundsSpan.textContent = totalRounds;
                 if (currentRound > totalRounds) currentRound = totalRounds;
                 if (!isRunning) {
-                    // This is the line that sets the display to the first round's time
                     timeLeft = roundTimes[currentRound - 1] || 0; 
                     updateDisplay();
                 }
@@ -743,7 +745,6 @@
                 prepTime = parseInt(prepInput.value) || 0;
                 restTime = parseInt(restInput.value) || 10; 
                 
-                // This function is what syncs the main timer with Round 1
                 updateRoundTimes(); 
                 
                 startBtn.textContent = 'Start';
@@ -761,6 +762,7 @@
                 isPrepping = false;
                 startBtn.textContent = 'Start';
                 startBtn.classList.remove('active');
+        
                 display.textContent = "DONE!";
                 display.style.color = '#00ff00';
                 status.textContent = "FINISHED";
@@ -803,7 +805,6 @@
                 updateRoundLabels();
             });
 
-            // This is the listener that updates the main timer when you change the round input
             roundsContainer.addEventListener('change', (e) => {
                  if (e.target.tagName === 'INPUT') resetTimer();
             });
@@ -813,7 +814,6 @@
                 timerCount--;
             });
 
-            // This initial call sets everything up
             resetTimer(); 
         }
 

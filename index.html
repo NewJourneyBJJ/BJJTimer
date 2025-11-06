@@ -12,6 +12,7 @@
             --text: #ffffff;
             --focus: #00bfff;
             --rest: #ff4500;
+            --prep: #f0e68c; /* Khaki for prep time */
             --stop: #ff3b30;
             --card-bg: rgba(30, 30, 30, 0.95);
             --card-border: #333;
@@ -105,6 +106,11 @@
             color: var(--rest);
             text-shadow: 0 0 12px rgba(255, 69, 0, 0.6);
         }
+        
+        .timer-display.prep {
+            color: var(--prep);
+            text-shadow: 0 0 12px rgba(240, 230, 140, 0.6);
+        }
 
         .status-info {
             font-size: 2.3rem;
@@ -166,26 +172,102 @@
             transform: translateY(1px);
         }
 
-        .stop-btn {
+        .reset-btn {
             background: #2c0b0e;
         }
 
-        .stop-btn:focus {
+        .reset-btn:focus {
             outline: 6px solid var(--stop);
             box-shadow: 0 0 20px rgba(255, 59, 48, 0.5);
         }
 
-        .stop-btn:active {
+        .reset-btn:active {
             background: var(--stop);
             color: white;
+        }
+        
+        /* Settings (Prep, Rest, Add/Remove) */
+        .settings-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .setting-item {
+             background: rgba(0, 0, 0, 0.5);
+            border: 1px solid #444;
+            border-radius: 18px;
+            padding: 14px 18px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .setting-item input {
+            background: #000;
+            color: var(--text);
+            border: 2px solid #555;
+            padding: 12px;
+            font-size: 1.3rem;
+            border-radius: 12px;
+            text-align: center;
+            width: 70px;
+            font-weight: 700;
+        }
+        
+        .setting-item input:focus {
+            outline: 5px solid var(--focus);
+            border-color: var(--focus);
+        }
+        
+        .setting-item .inc-btn, .setting-item .dec-btn {
+            width: 44px;
+            height: 44px;
+            font-size: 1.6rem;
+            background: #333;
+            border: 2px solid #666;
+            border-radius: 50%;
+            color: white;
+            font-weight: bold;
+            min-width: 44px; /* Override button default */
+            padding: 0; /* Override button default */
+        }
+
+        .setting-item .inc-btn:focus, .setting-item .dec-btn:focus {
+            box-shadow: 0 0 18px var(--glow);
+            border-color: var(--focus);
+        }
+
+        .setting-label {
+            font-size: 1.3rem;
+            color: #aaa;
+            font-weight: 600;
+        }
+        
+        .round-controls {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .round-controls button {
+            min-width: 60px;
+            font-size: 1.8rem;
+            padding: 10px;
         }
 
         .rounds-container {
             display: flex;
-            justify-content: center;
+            flex-direction: column; /* Stack rounds vertically */
+            align-items: center;
             gap: 16px;
             margin-top: 20px;
-            flex-wrap: wrap;
+            width: 100%;
+            max-width: 400px; /* Constrain width */
+            margin-left: auto;
+            margin-right: auto;
         }
 
         .round-timer {
@@ -196,7 +278,8 @@
             display: flex;
             align-items: center;
             gap: 12px;
-            min-width: 180px;
+            width: 100%; /* Make them fill the constrained container */
+            justify-content: space-between;
         }
 
         .round-timer input {
@@ -225,6 +308,8 @@
             border-radius: 50%;
             color: white;
             font-weight: bold;
+            min-width: 44px; /* Override */
+            padding: 0; /* Override */
         }
 
         .round-timer .inc-btn:focus, .round-timer .dec-btn:focus {
@@ -236,6 +321,13 @@
             font-size: 1.3rem;
             color: #aaa;
             font-weight: 600;
+            margin-left: auto; /* Push label to the right */
+        }
+        
+        .round-timer .input-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
         .add-timer {
@@ -277,6 +369,8 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            min-width: 50px; /* Override */
+            padding: 0; /* Override */
         }
 
         .remove-timer:focus {
@@ -309,8 +403,7 @@
 
     <div class="main-container">
         <div class="timers-grid" id="timers-container">
-            <!-- Timer cards injected here -->
-        </div>
+            </div>
 
         <button class="add-timer" id="add-timer-btn" tabindex="0">
             + Add New Timer (Up to 20)
@@ -323,10 +416,13 @@
         const timersContainer = document.getElementById('timers-container');
         const addTimerBtn = document.getElementById('add-timer-btn');
 
-        // Real buzzer sounds (base64)
-        const START_BUZZER = 'data:audio/wav;base64,UklGRl9AAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=';
-        const END_BUZZER = 'data:audio/wav;base64,UklGRmQAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=';
-        const ROUND_BUZZER = 'data:audio/wav;base64,UklGRmQAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=';
+        // Real buzzer sounds (Simple Sine Waves)
+        // Short high beep (150ms, 880Hz)
+        const START_BUZZER = 'data:audio/wav;base64,UklGRlYBAABXQVZFZm10IBAAAAABAAEAUSsAAKsAAAEACABkYXRhTAEAAAECAAADAgAFAwAABwUAAAkGAAALCAABDQoADw0AEBEAEhQAFRYAGBkAHBoAHR4AHwAgACIiACQmACcoACksAC0uAC8wADEyADQ1ADc4ADo7AD0+AD8/AEFAQwBEAEUERwBHAEgASQBLAEwATgBPAFEAUgBTAFQAVgBXAFgAWQBcAHEAcgBzAHQAdQB3AHgAeQB6AHsAfAB9AH4AfwCAAIIAgwCEAIUAhwCJAKAAogClAKYApwCoAKkAqwCtAK8AsACxALMAtQC5ALsAvADBAK8ArwCqAKgApgCnAKUAogChAIwAigCHAIYAhQCEAIEAgAB+AH0AewB6AHkAeAB3AHUAeQB5AHsAgACGAMsA6QEMAjYCSwPJAiAAKQI/AvoB8gL6AvkC+QL5AvkC+QL4AvkC9wLsAuUC1AbQAs8CxwKyAq0CpgKiA54DjQOXA4gDgwN+A2gDaQNdA1kDVoNSAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADI/0D/UP9Q/1D/UP9Q/1D/UP9Q/1D/UP9Q/1D/UP9Q/1D/UP9Q/1D/UP9Q/1D/UP9Q/1D/UP9Q/1D/UP9Q/1D/UP9Q/1D/UP9Q/1D/UP9Q/1D/UP9Q/1D/UP9Q/1D/UP9Q/1D/UP9Q/1D/UP9Q/1D/UP9Q/1D/UP9Q/1D/UP9Q/1D/UP9Q/1D/UP9Q/1D/UP9Q/1D/UP9Q/1D/UP9Q/1D/UP9Q/1D/UP9Q/1D/UP9Q/1D/UP9Q/1D/UP9Q/1D/UP9Q/1D/UP9Q/1D/UP9Q/1D/UP9Q/1D/UP9Q/1D/UP9Q/1D/UP9Q/1D/UP9Q/1D/UP9Q/1D/UP9Q/1D/UP9Q/1D/UP9Q/1D/UP9Q/1D/UP9Q/1D/UP9Q/1D/UP9Q/1D/UP9Q/1D/UP9Q/1D/UP9Q/1D/UP9Q/1D/UP9Q/1D/UP9Q/1D/UP9Q/1D/UP9Q/1D/UP9Q/1D/UP9Q/1D/UP9Q/1D/UP9Q/1D/UP9Q/1D/UP9Q/1D/UP9Q/1D/UP9Q/1D/UP9Q/1D/UP9Q/1D/UP9Q/1D/UP9Q/1D/UP9Q/1D/UP9Q/1D/UP9Q/1D/UP9Q/1D/UP9Q/1D/UP9Q/1D/UP9Q/1D/UP9Q/1D/UP9Q/1D/UP9Q/1D/UP9Q/1D/UP9Q/1D/UP9Q/1D/UP9Q/1D/UP9Q/1D/UP9Q/1D/UP9Q/1D/UP9Q/1D/UP9Q/1D/UP9Q/1D/UP9Q/1D/UP9Q/1D/UP9Q/1D/UP9Q/1D/UP9Q/1D/UP9Q/1D/UP9Q/1Player error';
+        // Long low beep (300ms, 440Hz)
+        const END_BUZZER = 'data:audio/wav;base64,UklGRmACAABXQVZFZm10IBAAAAABAAEAUSsAAKsAAAEACABkYXRhQACAAP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/KAkHiAjIisvNjs+QUZMUFdaXmNncnmBh4qPk5SanqGtsbm9w8fLztPW2N7j5+rt8vf5/P8BCg8XHSUsNkNUXGR/iZCur8HT3+rx9/sADhwnLzZGWmB4kZ+ttr3J09vo7vL5/gELEREeJzA8RVtqgYuVn6mxtbzGyszX3t/m6u/x9/j6/P/9/f3+AQQHEBofJTE8Rlxqg4+Xn6WwusDI0tve6Ovy+Pr+AA4cJSs4RldeZ4CMl5+nrbS8xsnS2d/l6u/x9/j6/P/9/f3+AQQHEBofJTE8Rlxqg4+Xn6WwusDI0tve6Ovy+Pr+AA4cJSs4RldeZ4CMl5+nrbS8xsnS2d/l6u/x9/j6/P/9/f3+AQQHEBofJTE8Rlxqg4+Xn6WwusDI0tve6Ovy+Pr+AA4cJSs4RldeZ4CMl5+nrbS8xsnS2d/l6u/x9/j6/P/9/f3+AQQHEBofJTE8Rlxqg4+Xn6WwusDI0tve6Ovy+Pr+AA4cJSs4RldeZ4CMl5+nrbS8xsnS2d/l6u/x9/j6/P/9/f3+AQQHEBofJTE8Rlxqg4+Xn6WwusDI0tve6Ovy+Pr+AA4cJSs4RldeZ4CMl5+nrbS8xsnS2d/l6u/x9/j6/P/9/f3+AQQHEBofJTE8Rlxqg4+Xn6WwusDI0tve6Ovy+Pr+AA4cJSs4RldeZ4CMl5+nrbS8xsnS2d/l6u/x9/j6/P/9/f3+AQQHEBofJTE8Rlxqg4+Xn6WwusDI0tve6Ovy+Pr+AA4cJSs4RldeZ4CMl5+nrbS8xsnS2d/l6u/x9/j6/P/9/f3+AQQHEBofJTE8Rlxqg4+Xn6WwusDI0tve6Ovy+Pr+AA4cJSs4RldeZ4CMl5+nrbS8xsnS2d/l6u/x9/j6/P/9/f3+AQQHEBofJTE8Rlxqg4+Xn6WwusDI0tve6Ovy+Pr+AA4cJSs4RldeZ4CMl5+nrbS8xsnS2d/l6u/x9/j6/P/9/f3+AQQHEBofJTE8Rlxqg4+Xn6WwusDI0tve6Ovy+Pr+AA4cJSs4RldeZ4CMl5+nrbS8xsnS2d/l6u/x9/j6/P/9/f3+AQQHEBofJTE8Rlxqg4+Xn6WwusDI0tve6Ovy+Pr+AA4cJSs4RldeZ4CMl5+nrbS8xsnS2d/l6u/x9/j6/P/9/f3+AQQHEBofJTE8Rlxqg4+Xn6WwusDI0tve6Ovy+Pr+AA4cJSs4RldeZ4CMl5+nrbS8xsnS2d/l6u/x9/j6/P/9/f3+AQQHEBofJTE8Rlxqg4+Xn6WwusDI0tve6Ovy+Pr+AA4cJSs4RldeZ4CMl5+nrbS8xsnS2d/l6u/x9/j6/P/9/f3+AQQHEBofJTE8Rlxqg4+Xn6WwusDI0tve6Ovy+Pr+AA4cJSs4RldeZ4CMl5+nrbS8xsnS2d/l6u/x9/j6/P/9/f3s7ezs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7P/8/P/8/P/8/P/8/P/8/P/8/P/8/P/8/P/8/P/8/P/8/P/8/P/8/P/8/P/8/P/8/P/8/P/8/P/8/P/8/P/8/P/8/P/8/P/8/P/8/P/8/P/8/P/8/P/8/P/8/P/8/P/8/P/8/P/8/P/8/P/8/P/8/P/8/P/8/P/Answer';
+        // 3 short beeps (10-sec warning)
+        const WARNING_BUZZER = 'data:audio/wav;base64,UklGRqgAAABXQVZFZm10IBAAAAABAAEAUSsAAKsAAAEACABkYXRhZAAAAAD//P/8/P/8/P/8/P/8/P/8/P/8/P/8/P/8/P/8/P/8/P/8/P/8/P/8/P/8/P/8/P/8/P/8/P/8/P/8/P/8/P/8/P/8/P/8/P/8/P/8/P/8/P/8/P/8/P/8/P/8/P/8/P/8/P/8/P/8/P/8/P/8/P/8/P/8/P/8/P/8/P/8/P/8/P/8/P/8/P/8/P/8/P/8/P/8/P/8/P/8/P/8/P/8/P/8/P/8/P/8/P/8/P/8/P/8/P/8/P/8/P/8/P/8/P/8/P/8/P/8/P/8/P/8/P/8/P/8/P/8/P/8/P/8/P/8/P/8/P/8/P/8/P/8/P/8/Labels';
 
         function playSound(base64) {
             const audio = new Audio(base64);
@@ -353,12 +449,30 @@
                     
                     <div class="controls">
                         <button class="control-btn start-btn" data-id="${timerId}">Start</button>
-                        <button class="control-btn stop-btn" data-id="${timerId}">Stop</button>
+                        <button class="control-btn reset-btn" data-id="${timerId}">Reset</button>
+                    </div>
+
+                    <div class="settings-container">
+                        <div class="setting-item">
+                            <button class="dec-btn" data-target="${timerId}-prep-time">-</button>
+                            <input type="number" id="${timerId}-prep-time" min="0" max="60" value="10" />
+                            <button class="inc-btn" data-target="${timerId}-prep-time">+</button>
+                            <span class="setting-label">Prep (s)</span>
+                        </div>
+                        <div class="setting-item">
+                            <button class="dec-btn" data-target="${timerId}-rest-time">-</button>
+                            <input type="number" id="${timerId}-rest-time" min="0" max="300" value="60" />
+                            <button class="inc-btn" data-target="${timerId}-rest-time">+</button>
+                            <span class="setting-label">Rest (s)</span>
+                        </div>
+                        <div class="round-controls">
+                             <button class="remove-round-btn" data-id="${timerId}" aria-label="Remove last round">-</button>
+                             <button class="add-round-btn" data-id="${timerId}" aria-label="Add new round">+</button>
+                        </div>
                     </div>
 
                     <div class="rounds-container" id="${timerId}-rounds-container">
-                        <!-- Round timers injected here -->
-                    </div>
+                        </div>
                 </div>
             `;
 
@@ -379,16 +493,18 @@
                 if (startBtn) startBtn.focus();
             }, 100);
 
-            setupTimerLogic(card, timerId, defaultRounds);
+            setupTimerLogic(card, timerId);
         }
 
         function addRoundTimer(container, timerId, roundNum, defaultMin = 5) {
             const roundId = `${timerId}-round-${roundNum}`;
             const roundHTML = `
                 <div class="round-timer">
-                    <button class="dec-btn" data-target="${roundId}">-</button>
-                    <input type="number" id="${roundId}" min="1" max="60" value="${defaultMin}" />
-                    <button class="inc-btn" data-target="${roundId}">+</button>
+                    <div class="input-group">
+                        <button class="dec-btn" data-target="${roundId}">-</button>
+                        <input type="number" id="${roundId}" min="1" max="60" value="${defaultMin}" />
+                        <button class="inc-btn" data-target="${roundId}">+</button>
+                    </div>
                     <span class="round-label">Round ${roundNum}</span>
                 </div>
             `;
@@ -403,17 +519,44 @@
                     let val = parseInt(input.value) || 1;
                     val += btn.classList.contains('inc-btn') ? 1 : -1;
                     input.value = Math.max(1, Math.min(60, val));
+                    // Manually trigger change event for logic update
+                    input.dispatchEvent(new Event('change'));
+                });
+            });
+        }
+        
+        // Helper for inc/dec on settings
+        function setupSettingIncDec(card) {
+             card.querySelectorAll('.setting-item .inc-btn, .setting-item .dec-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const targetId = btn.dataset.target;
+                    const input = document.getElementById(targetId);
+                    if (!input) return;
+                    
+                    let val = parseInt(input.value) || 0;
+                    const step = (input.id.includes('rest')) ? 5 : 1;
+                    val += btn.classList.contains('inc-btn') ? step : -step;
+                    
+                    const min = parseInt(input.min) || 0;
+                    const max = parseInt(input.max) || 60;
+                    
+                    input.value = Math.max(min, Math.min(max, val));
+                    input.dispatchEvent(new Event('change'));
                 });
             });
         }
 
-        function setupTimerLogic(card, timerId, initialRounds) {
-            let roundTimes = Array(initialRounds).fill(300); // seconds
-            let timeLeft = roundTimes[0];
-            let totalRounds = initialRounds;
+        function setupTimerLogic(card, timerId) {
+            let roundTimes = []; // seconds
+            let prepTime = 10; // seconds
+            let restTime = 60; // seconds
+            let timeLeft = 0;
+            let totalRounds = 0;
             let currentRound = 1;
             let isRunning = false;
             let isResting = false;
+            let isPrepping = false;
+            let warningPlayed = false;
             let interval = null;
 
             const display = document.getElementById(`${timerId}-display`);
@@ -421,9 +564,23 @@
             const roundDisplay = document.getElementById(`${timerId}-round`);
             const totalRoundsSpan = document.getElementById(`${timerId}-total-rounds`);
             const startBtn = card.querySelector('.start-btn');
-            const stopBtn = card.querySelector('.stop-btn');
+            const resetBtn = card.querySelector('.reset-btn');
             const roundsContainer = card.querySelector(`#${timerId}-rounds-container`);
             const removeBtn = card.querySelector('.remove-timer');
+            
+            const prepInput = document.getElementById(`${timerId}-prep-time`);
+            const restInput = document.getElementById(`${timerId}-rest-time`);
+            const addRoundBtn = card.querySelector('.add-round-btn');
+            const removeRoundBtn = card.querySelector('.remove-round-btn');
+            
+            setupSettingIncDec(card);
+
+            function updateRoundLabels() {
+                const labels = roundsContainer.querySelectorAll('.round-label');
+                labels.forEach((label, index) => {
+                    label.textContent = `Round ${index + 1}`;
+                });
+            }
 
             function updateRoundTimes() {
                 const inputs = roundsContainer.querySelectorAll('input');
@@ -431,8 +588,10 @@
                 totalRounds = roundTimes.length;
                 totalRoundsSpan.textContent = totalRounds;
                 if (currentRound > totalRounds) currentRound = totalRounds;
-                if (!isRunning) timeLeft = roundTimes[currentRound - 1];
-                updateDisplay();
+                if (!isRunning) {
+                    timeLeft = roundTimes[currentRound - 1] || 0;
+                    updateDisplay();
+                }
                 updateRoundInfo();
             }
 
@@ -443,8 +602,19 @@
             }
 
             function updateStatus() {
-                status.textContent = isResting ? "REST" : "FIGHT";
-                display.classList.toggle('rest', isResting);
+                if (isPrepping) {
+                    status.textContent = "PREP";
+                    display.classList.add('prep');
+                    display.classList.remove('rest');
+                } else if (isResting) {
+                    status.textContent = "REST";
+                    display.classList.add('rest');
+                    display.classList.remove('prep');
+                } else {
+                    status.textContent = "FIGHT";
+                    display.classList.remove('rest');
+                    display.classList.remove('prep');
+                }
             }
 
             function updateRoundInfo() {
@@ -456,16 +626,40 @@
                 isRunning = true;
                 startBtn.textContent = 'Pause';
                 startBtn.classList.add('active');
-                playSound(START_BUZZER);
+
+                // Check for prep time
+                if (currentRound === 1 && !isResting && !isPrepping && prepTime > 0 && timeLeft === roundTimes[0]) {
+                    isPrepping = true;
+                    timeLeft = prepTime;
+                    playSound(START_BUZZER);
+                    updateStatus();
+                    updateDisplay();
+                } else {
+                     playSound(START_BUZZER);
+                }
+                
+                warningPlayed = false;
 
                 interval = setInterval(() => {
                     timeLeft--;
                     updateDisplay();
 
+                    // 10-second warning
+                    if (timeLeft === 10 && !isResting && !isPrepping && !warningPlayed) {
+                        playSound(WARNING_BUZZER);
+                        warningPlayed = true;
+                    }
+
                     if (timeLeft <= 0) {
-                        if (isResting) {
-                            // End rest → next round
-                            playSound(ROUND_BUZZER);
+                        if (isPrepping) {
+                            // End prep -> Start round 1
+                            isPrepping = false;
+                            isResting = false;
+                            timeLeft = roundTimes[0];
+                            warningPlayed = false;
+                            playSound(START_BUZZER);
+                        } else if (isResting) {
+                            // End rest -> next round
                             isResting = false;
                             currentRound++;
                             if (currentRound > totalRounds) {
@@ -473,16 +667,18 @@
                                 return;
                             }
                             timeLeft = roundTimes[currentRound - 1];
+                            warningPlayed = false;
+                            playSound(START_BUZZER);
                             updateRoundInfo();
                         } else {
-                            // End fight
+                            // End fight round
                             if (currentRound >= totalRounds) {
                                 endSession();
                                 return;
                             }
-                            playSound(END_BUZZER);
                             isResting = true;
-                            timeLeft = 60; // 60s rest
+                            timeLeft = restTime;
+                            playSound(END_BUZZER);
                         }
                         updateStatus();
                     }
@@ -496,29 +692,34 @@
                 startBtn.classList.remove('active');
             }
 
-            function stopTimer() {
+            function resetTimer() {
                 clearInterval(interval);
                 isRunning = false;
                 isResting = false;
+                isPrepping = false;
                 currentRound = 1;
-                timeLeft = roundTimes[0];
+                prepTime = parseInt(prepInput.value) || 0;
+                restTime = parseInt(restInput.value) || 60;
+                updateRoundTimes(); // This sets timeLeft to roundTimes[0]
                 startBtn.textContent = 'Start';
                 startBtn.classList.remove('active');
+                display.style.color = ''; // Reset from "DONE!" green
                 updateDisplay();
                 updateStatus();
                 updateRoundInfo();
-                display.style.color = 'var(--primary)';
             }
 
             function endSession() {
                 clearInterval(interval);
                 isRunning = false;
                 isResting = false;
+                isPrepping = false;
                 startBtn.textContent = 'Start';
                 startBtn.classList.remove('active');
                 display.textContent = "DONE!";
                 display.style.color = '#00ff00';
                 status.textContent = "FINISHED";
+                playSound(END_BUZZER);
                 playSound(END_BUZZER);
             }
 
@@ -531,12 +732,32 @@
                 }
             });
 
-            stopBtn.addEventListener('click', stopTimer);
+            resetBtn.addEventListener('click', resetTimer);
+            
+            prepInput.addEventListener('change', () => {
+                prepTime = parseInt(prepInput.value) || 0;
+            });
+            
+            restInput.addEventListener('change', () => {
+                restTime = parseInt(restInput.value) || 60;
+            });
+
+            addRoundBtn.addEventListener('click', () => {
+                if (isRunning) return;
+                const newRoundNum = roundsContainer.children.length + 1;
+                addRoundTimer(roundsContainer, timerId, newRoundNum, 5);
+                updateRoundTimes();
+            });
+
+            removeRoundBtn.addEventListener('click', () => {
+                if (isRunning || roundsContainer.children.length <= 1) return;
+                roundsContainer.lastElementChild.remove();
+                updateRoundTimes();
+            });
 
             // Update round times on input change
-            roundsContainer.addEventListener('change', updateRoundTimes);
-            roundsContainer.addEventListener('click', (e) => {
-                if (e.target.matches('.inc-btn, .dec-btn')) updateRoundTimes();
+            roundsContainer.addEventListener('change', (e) => {
+                 if (e.target.tagName === 'INPUT') resetTimer();
             });
 
             // Instant remove
@@ -546,10 +767,7 @@
             });
 
             // Initial
-            updateRoundTimes();
-            updateDisplay();
-            updateStatus();
-            updateRoundInfo();
+            resetTimer(); // Use resetTimer for initial setup
         }
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -561,7 +779,7 @@
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' || e.key === ' ') {
                 const focused = document.activeElement;
-                if (focused && focused.click && !focused.disabled) {
+                if (focused && focused.click && !focused.disabled && !focused.matches('input')) {
                     e.preventDefault();
                     focused.click();
                 }

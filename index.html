@@ -34,9 +34,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            /* --- THIS IS THE FIX --- */
-            padding: 0 0 40px 0; /* Removed horizontal padding */
-            /* --- END FIX --- */
+            padding: 0 0 40px 0; 
             overflow-y: auto;
         }
 
@@ -44,12 +42,12 @@
             width: 100%;
             max-width: 1000px;
             text-align: center;
-            padding: 35px 15px 25px 15px; /* Added padding here */
+            padding: 35px 15px 25px 15px; 
             margin-bottom: 15px;
         }
 
         .logo-image {
-            width: 120px;
+            width: 84px;
             height: 70px;
             margin-bottom: 15px;
         }
@@ -72,7 +70,7 @@
             flex-direction: column;
             align-items: center;
             gap: 55px;
-            padding: 0 15px; /* Added padding here */
+            padding: 0 15px; 
         }
 
         .timers-grid {
@@ -96,13 +94,11 @@
             box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
         }
         
-        /* Added media query for small screen padding */
         @media (max-width: 600px) {
             .timer-card {
                 padding: 30px 20px;
             }
         }
-
 
         .timer-card:focus-within {
             border-color: var(--focus);
@@ -119,7 +115,6 @@
             text-shadow: 0 0 12px rgba(0, 191, 255, 0.6);
         }
         
-        /* Added media query for small screen text */
         @media (max-width: 600px) {
             .title {
                 font-size: 3rem;
@@ -187,7 +182,6 @@
                 font-size: 1.2rem;
             }
         }
-
 
         button::before {
             content: '';
@@ -385,7 +379,7 @@
             transition: all 0.3s ease;
             min-width: 400px;
             font-weight: 700;
-            width: 100%; /* Make it fill container width */
+            width: 100%;
         }
         
         @media (max-width: 600px) {
@@ -396,7 +390,6 @@
                 padding: 40px;
             }
         }
-
 
         .add-timer:focus {
             border-color: var(--focus);
@@ -437,7 +430,6 @@
             }
         }
 
-
         .remove-timer:focus {
             background: #f00;
             outline: 5px solid var(--focus);
@@ -467,7 +459,6 @@
         <h1 class="title">New Journey BJJ</h1>
     </div>
 
-
     <div class="main-container">
         <div class="timers-grid" id="timers-container">
             </div>
@@ -484,20 +475,58 @@
         const addTimerBtn = document.getElementById('add-timer-btn');
 
         // --- AUDIO SYSTEM ---
-        let audioCtx = null; 
-        
+        let audioCtx = null;
+        let silentAudioElement = null; // New: To trick the browser
+        let wakeLock = null; // New: Wake Lock API
+
         function initAudio() {
             if (!audioCtx) {
                 try {
-                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    audioCtx = new AudioContext();
+                    
+                    // --- THE HACK: Play a silent audio loop ---
+                    // This forces the browser to keep the "media" thread active
+                    if (!silentAudioElement) {
+                        silentAudioElement = new Audio("data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=");
+                        silentAudioElement.loop = true;
+                        silentAudioElement.play().catch(e => console.log("Silent audio failed:", e));
+                    }
+
+                    // --- THE WAKE LOCK: Keep screen on ---
+                    requestWakeLock();
+
                 } catch(e) {
                     console.error("Web Audio API is not supported in this browser");
                 }
             }
         }
 
+        // Keep Screen On Function
+        async function requestWakeLock() {
+            if ('wakeLock' in navigator) {
+                try {
+                    wakeLock = await navigator.wakeLock.request('screen');
+                    console.log('Screen Wake Lock active');
+                    // Re-acquire if visibility changes (e.g. user minimized then came back)
+                    document.addEventListener('visibilitychange', async () => {
+                        if (wakeLock !== null && document.visibilityState === 'visible') {
+                            wakeLock = await navigator.wakeLock.request('screen');
+                        }
+                    });
+                } catch (err) {
+                    console.error(`${err.name}, ${err.message}`);
+                }
+            }
+        }
+
         function playBeep(frequency, duration, type = 'square') {
             if (!audioCtx) return; 
+            
+            // Re-resume context if suspended (common in mobile)
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
 
             const oscillator = audioCtx.createOscillator();
             const gainNode = audioCtx.createGain();
@@ -529,7 +558,6 @@
             setTimeout(() => playBeep(880, 150, 'square'), 200); 
             setTimeout(() => playBeep(880, 150, 'square'), 400); 
         }
-        
         // --- END AUDIO SYSTEM ---
 
 
@@ -659,6 +687,10 @@
             let isPrepping = false;
             let warningPlayed = false;
             let interval = null;
+            
+            // --- NEW: Accurate Timing Variables ---
+            let endTime = 0; 
+            // --------------------------------------
 
             const display = document.getElementById(`${timerId}-display`);
             const status = document.getElementById(`${timerId}-status`);
@@ -697,8 +729,10 @@
             }
 
             function updateDisplay() {
-                const mins = String(Math.floor(timeLeft / 60)).padStart(2, '0');
-                const secs = String(timeLeft % 60).padStart(2, '0');
+                // Ensure non-negative
+                const displayTime = Math.max(0, timeLeft);
+                const mins = String(Math.floor(displayTime / 60)).padStart(2, '0');
+                const secs = String(displayTime % 60).padStart(2, '0');
                 display.textContent = `${mins}:${secs}`;
             }
 
@@ -725,26 +759,44 @@
             function startTimer() {
                 if (isRunning) return;
                 
-                initAudio(); 
+                initAudio(); // Also triggers the wake lock & silent audio
                 
                 isRunning = true;
                 startBtn.textContent = 'Pause';
                 startBtn.classList.add('active');
 
+                // Determine duration for the current phase
+                let currentDuration = 0;
+
                 if (currentRound === 1 && !isResting && !isPrepping && prepTime > 0 && timeLeft === roundTimes[0]) {
                     isPrepping = true;
+                    currentDuration = prepTime;
                     timeLeft = prepTime;
                     playBeep(660, 150, 'square'); 
                     updateStatus();
-                    updateDisplay();
                 } else {
-                     playTripleBeep(); 
+                    // It's a resume or a direct start
+                    // We rely on 'timeLeft' being correct from pause state
+                    currentDuration = timeLeft;
+                    if (!isPrepping && !isResting && currentDuration === roundTimes[currentRound-1]) {
+                         playTripleBeep();
+                    }
                 }
+                
+                // --- NEW: Calculate the target end timestamp ---
+                // This is the "Truth" for the timer
+                endTime = Date.now() + (currentDuration * 1000); 
                 
                 warningPlayed = false;
 
+                // High-frequency polling (100ms) to catch the end more accurately
                 interval = setInterval(() => {
-                    timeLeft--;
+                    const now = Date.now();
+                    const secondsRemaining = Math.ceil((endTime - now) / 1000);
+                    
+                    // Sync our visual variable
+                    timeLeft = secondsRemaining;
+                    
                     updateDisplay();
 
                     if (timeLeft === 10 && !isResting && !isPrepping && !warningPlayed) {
@@ -753,13 +805,17 @@
                     }
 
                     if (timeLeft <= 0) {
+                        // Phase complete
+                        clearInterval(interval); // Stop this interval temporarily
+                        
                         if (isPrepping) {
+                            // Prep done -> Fight
                             isPrepping = false;
                             isResting = false;
                             timeLeft = roundTimes[0];
-                            warningPlayed = false;
-                            playTripleBeep(); 
+                            startPhase(timeLeft, "FIGHT"); // Helper to restart loop
                         } else if (isResting) {
+                            // Rest done -> Next Fight
                             isResting = false;
                             currentRound++;
                             if (currentRound > totalRounds) {
@@ -767,21 +823,72 @@
                                 return;
                             }
                             timeLeft = roundTimes[currentRound - 1];
-                            warningPlayed = false;
-                            playTripleBeep(); 
                             updateRoundInfo();
+                            startPhase(timeLeft, "FIGHT");
                         } else {
+                            // Fight done -> Rest or End
                             if (currentRound >= totalRounds) {
                                 endSession();
                                 return;
                             }
                             isResting = true;
                             timeLeft = restTime;
-                            playBeep(440, 500, 'square'); 
+                            startPhase(timeLeft, "REST");
                         }
                         updateStatus();
                     }
-                }, 1000);
+                }, 100); // Check every 100ms
+            }
+            
+            // Helper to handle phase transitions with Timestamp logic
+            function startPhase(duration, type) {
+                // Play sound for the NEW phase
+                if (type === "FIGHT") {
+                    playTripleBeep();
+                    warningPlayed = false;
+                } else if (type === "REST") {
+                    playBeep(440, 500, 'square');
+                }
+                
+                // Reset timestamp target
+                endTime = Date.now() + (duration * 1000);
+                
+                // Restart interval
+                interval = setInterval(() => {
+                    const now = Date.now();
+                    timeLeft = Math.ceil((endTime - now) / 1000);
+                    updateDisplay();
+                    
+                    if (timeLeft === 10 && !isResting && !isPrepping && !warningPlayed) {
+                        playWarningBeep();
+                        warningPlayed = true;
+                    }
+
+                    if (timeLeft <= 0) {
+                        clearInterval(interval);
+                        // Recursive logic for next phase
+                        if (isResting) {
+                            isResting = false;
+                            currentRound++;
+                            if (currentRound > totalRounds) {
+                                endSession(); return;
+                            }
+                            timeLeft = roundTimes[currentRound - 1];
+                            updateRoundInfo();
+                            updateStatus();
+                            startPhase(timeLeft, "FIGHT");
+                        } else {
+                            // Was fighting
+                            if (currentRound >= totalRounds) {
+                                endSession(); return;
+                            }
+                            isResting = true;
+                            timeLeft = restTime;
+                            updateStatus();
+                            startPhase(timeLeft, "REST");
+                        }
+                    }
+                }, 100);
             }
 
             function pauseTimer() {
@@ -789,6 +896,10 @@
                 isRunning = false;
                 startBtn.textContent = 'Start';
                 startBtn.classList.remove('active');
+                
+                // When pausing, 'timeLeft' is already holding the correct 
+                // remaining seconds because of the Date calculation. 
+                // No extra math needed here.
             }
 
             function resetTimer() {

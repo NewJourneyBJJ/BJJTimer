@@ -476,8 +476,7 @@
 
         // --- AUDIO SYSTEM ---
         let audioCtx = null;
-        let silentAudioElement = null; // New: To trick the browser
-        let wakeLock = null; // New: Wake Lock API
+        let wakeLock = null;
 
         function initAudio() {
             if (!audioCtx) {
@@ -485,13 +484,20 @@
                     const AudioContext = window.AudioContext || window.webkitAudioContext;
                     audioCtx = new AudioContext();
                     
-                    // --- THE HACK: Play a silent audio loop ---
-                    // This forces the browser to keep the "media" thread active
-                    if (!silentAudioElement) {
-                        silentAudioElement = new Audio("data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=");
-                        silentAudioElement.loop = true;
-                        silentAudioElement.play().catch(e => console.log("Silent audio failed:", e));
-                    }
+                    // --- THE FIX: USE A SILENT OSCILLATOR, NOT AN AUDIO ELEMENT ---
+                    // This keeps the audio engine running ("Mix Mode") 
+                    // without stealing "Media Focus" (which pauses Spotify).
+                    const keepAliveOsc = audioCtx.createOscillator();
+                    const keepAliveGain = audioCtx.createGain();
+                    
+                    keepAliveOsc.type = 'sine';
+                    keepAliveOsc.frequency.setValueAtTime(1, audioCtx.currentTime); // 1Hz (inaudible)
+                    keepAliveGain.gain.setValueAtTime(0.0001, audioCtx.currentTime); // Almost zero volume
+                    
+                    keepAliveOsc.connect(keepAliveGain);
+                    keepAliveGain.connect(audioCtx.destination);
+                    keepAliveOsc.start();
+                    // ------------------------------------------------------------
 
                     // --- THE WAKE LOCK: Keep screen on ---
                     requestWakeLock();
@@ -687,10 +693,7 @@
             let isPrepping = false;
             let warningPlayed = false;
             let interval = null;
-            
-            // --- NEW: Accurate Timing Variables ---
             let endTime = 0; 
-            // --------------------------------------
 
             const display = document.getElementById(`${timerId}-display`);
             const status = document.getElementById(`${timerId}-status`);
@@ -729,7 +732,6 @@
             }
 
             function updateDisplay() {
-                // Ensure non-negative
                 const displayTime = Math.max(0, timeLeft);
                 const mins = String(Math.floor(displayTime / 60)).padStart(2, '0');
                 const secs = String(displayTime % 60).padStart(2, '0');
@@ -759,13 +761,12 @@
             function startTimer() {
                 if (isRunning) return;
                 
-                initAudio(); // Also triggers the wake lock & silent audio
+                initAudio(); 
                 
                 isRunning = true;
                 startBtn.textContent = 'Pause';
                 startBtn.classList.add('active');
 
-                // Determine duration for the current phase
                 let currentDuration = 0;
 
                 if (currentRound === 1 && !isResting && !isPrepping && prepTime > 0 && timeLeft === roundTimes[0]) {
@@ -775,28 +776,21 @@
                     playBeep(660, 150, 'square'); 
                     updateStatus();
                 } else {
-                    // It's a resume or a direct start
-                    // We rely on 'timeLeft' being correct from pause state
                     currentDuration = timeLeft;
                     if (!isPrepping && !isResting && currentDuration === roundTimes[currentRound-1]) {
                          playTripleBeep();
                     }
                 }
                 
-                // --- NEW: Calculate the target end timestamp ---
-                // This is the "Truth" for the timer
                 endTime = Date.now() + (currentDuration * 1000); 
                 
                 warningPlayed = false;
 
-                // High-frequency polling (100ms) to catch the end more accurately
                 interval = setInterval(() => {
                     const now = Date.now();
                     const secondsRemaining = Math.ceil((endTime - now) / 1000);
                     
-                    // Sync our visual variable
                     timeLeft = secondsRemaining;
-                    
                     updateDisplay();
 
                     if (timeLeft === 10 && !isResting && !isPrepping && !warningPlayed) {
@@ -805,17 +799,14 @@
                     }
 
                     if (timeLeft <= 0) {
-                        // Phase complete
-                        clearInterval(interval); // Stop this interval temporarily
+                        clearInterval(interval); 
                         
                         if (isPrepping) {
-                            // Prep done -> Fight
                             isPrepping = false;
                             isResting = false;
                             timeLeft = roundTimes[0];
-                            startPhase(timeLeft, "FIGHT"); // Helper to restart loop
+                            startPhase(timeLeft, "FIGHT"); 
                         } else if (isResting) {
-                            // Rest done -> Next Fight
                             isResting = false;
                             currentRound++;
                             if (currentRound > totalRounds) {
@@ -826,7 +817,6 @@
                             updateRoundInfo();
                             startPhase(timeLeft, "FIGHT");
                         } else {
-                            // Fight done -> Rest or End
                             if (currentRound >= totalRounds) {
                                 endSession();
                                 return;
@@ -837,12 +827,10 @@
                         }
                         updateStatus();
                     }
-                }, 100); // Check every 100ms
+                }, 100); 
             }
             
-            // Helper to handle phase transitions with Timestamp logic
             function startPhase(duration, type) {
-                // Play sound for the NEW phase
                 if (type === "FIGHT") {
                     playTripleBeep();
                     warningPlayed = false;
@@ -850,10 +838,8 @@
                     playBeep(440, 500, 'square');
                 }
                 
-                // Reset timestamp target
                 endTime = Date.now() + (duration * 1000);
                 
-                // Restart interval
                 interval = setInterval(() => {
                     const now = Date.now();
                     timeLeft = Math.ceil((endTime - now) / 1000);
@@ -866,7 +852,6 @@
 
                     if (timeLeft <= 0) {
                         clearInterval(interval);
-                        // Recursive logic for next phase
                         if (isResting) {
                             isResting = false;
                             currentRound++;
@@ -878,7 +863,6 @@
                             updateStatus();
                             startPhase(timeLeft, "FIGHT");
                         } else {
-                            // Was fighting
                             if (currentRound >= totalRounds) {
                                 endSession(); return;
                             }
@@ -896,10 +880,6 @@
                 isRunning = false;
                 startBtn.textContent = 'Start';
                 startBtn.classList.remove('active');
-                
-                // When pausing, 'timeLeft' is already holding the correct 
-                // remaining seconds because of the Date calculation. 
-                // No extra math needed here.
             }
 
             function resetTimer() {
@@ -937,7 +917,6 @@
                 setTimeout(() => playBeep(440, 500, 'square'), 600);
             }
 
-            // Event Listeners
             startBtn.addEventListener('click', () => {
                 if (startBtn.textContent === 'Pause') {
                     pauseTimer();
